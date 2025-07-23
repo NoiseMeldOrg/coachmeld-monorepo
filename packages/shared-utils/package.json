@@ -1,0 +1,21 @@
+{
+  "name": "@coachmeld/shared-utils",
+  "version": "1.0.0",
+  "description": "Shared utility functions for CoachMeld applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@coachmeld/shared-types": "workspace:*"
+  }
+}

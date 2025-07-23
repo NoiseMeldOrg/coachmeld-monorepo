@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: coach-meld-admin
+    runtime: node
+    region: oregon # Change to your preferred region
+    plan: starter # Change to 'standard' for production
+    buildCommand: npm install; npm ci; npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false # Set in Render dashboard
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false # Set in Render dashboard
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false # Set in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false # Set in Render dashboard
+      - key: PORT
+        value: 3000
+    autoDeploy: true # Automatically deploy on push to master
+    branch: master # or main, depending on your default branch

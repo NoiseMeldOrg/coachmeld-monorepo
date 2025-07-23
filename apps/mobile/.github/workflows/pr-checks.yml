@@ -1,0 +1,93 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ master, develop ]
+  push:
+    branches: [ master, develop ]
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run TypeScript check
+      run: npx tsc --noEmit --skipLibCheck
+      
+    - name: Check for console.logs
+      run: |
+        if grep -r "console\.log" src/ --exclude-dir=node_modules; then
+          echo "::warning::Found console.log statements in code"
+        fi
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test --if-present
+      
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npx expo export --platform web
+      
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run security audit
+      run: npm audit --audit-level=high
+      continue-on-error: true
+      
+    - name: Check for sensitive data
+      run: |
+        # Check for potential API keys or secrets
+        if grep -r -E "(api_key|apikey|secret|password|token)" src/ --exclude-dir=node_modules | grep -v -E "(\.d\.ts|\.test\.|\.spec\.)"; then
+          echo "::warning::Potential sensitive data found in code"
+        fi

@@ -1,0 +1,307 @@
+import React from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+
+interface MedicalDisclaimerProps {
+  visible: boolean;
+  onAccept: () => void;
+  onDecline: () => void;
+  coachType?: 'general' | 'carnivore' | 'fitness' | 'discipleship';
+}
+
+export const MedicalDisclaimer: React.FC<MedicalDisclaimerProps> = ({
+  visible,
+  onAccept,
+  onDecline,
+  coachType = 'general',
+}) => {
+  const { theme } = useTheme();
+
+  const handleAccept = async () => {
+    await AsyncStorage.setItem('@disclaimer_accepted', new Date().toISOString());
+    if (coachType !== 'general') {
+      await AsyncStorage.setItem(`@disclaimer_${coachType}_accepted`, new Date().toISOString());
+    }
+    onAccept();
+  };
+
+  const getCoachSpecificWarning = () => {
+    switch (coachType) {
+      case 'carnivore':
+        return (
+          <View style={[styles.warningBox, { backgroundColor: theme.warning + '20' }]}>
+            <Ionicons name="warning" size={24} color={theme.warning} />
+            <Text style={[styles.warningText, { color: theme.text }]}>
+              The carnivore diet is a highly restrictive eating pattern that may not be suitable 
+              for everyone. It may pose risks for individuals with certain health conditions including 
+              kidney disease, heart disease, or digestive disorders.
+            </Text>
+          </View>
+        );
+      case 'fitness':
+        return (
+          <View style={[styles.warningBox, { backgroundColor: theme.warning + '20' }]}>
+            <Ionicons name="warning" size={24} color={theme.warning} />
+            <Text style={[styles.warningText, { color: theme.text }]}>
+              Always consult with a healthcare provider before beginning any new exercise program, 
+              especially if you have pre-existing health conditions or injuries.
+            </Text>
+          </View>
+        );
+      case 'discipleship':
+        return (
+          <View style={[styles.infoBox, { backgroundColor: theme.primary + '20' }]}>
+            <Ionicons name="information-circle" size={24} color={theme.primary} />
+            <Text style={[styles.warningText, { color: theme.text }]}>
+              Spiritual guidance provided is meant to supplement, not replace, guidance from 
+              your local faith community and spiritual leaders.
+            </Text>
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onDecline}
+    >
+      <View style={styles.centeredView}>
+        <View style={[styles.modalView, { backgroundColor: theme.background }]}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Important Health Information
+            </Text>
+
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Medical Disclaimer
+            </Text>
+
+            <Text style={[styles.disclaimerText, { color: theme.textSecondary }]}>
+              CoachMeld provides health and wellness information for educational purposes only. 
+              The information provided by our AI coaches is not intended to be a substitute for 
+              professional medical advice, diagnosis, or treatment.
+            </Text>
+
+            <Text style={[styles.disclaimerText, { color: theme.textSecondary }]}>
+              Always seek the advice of your physician or other qualified health provider with 
+              any questions you may have regarding a medical condition or dietary changes. Never 
+              disregard professional medical advice or delay in seeking it because of something 
+              you have read or received from CoachMeld.
+            </Text>
+
+            {getCoachSpecificWarning()}
+
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Emergency Situations
+            </Text>
+
+            <View style={[styles.emergencyBox, { backgroundColor: theme.error + '20' }]}>
+              <Ionicons name="alert-circle" size={24} color={theme.error} />
+              <Text style={[styles.emergencyText, { color: theme.text }]}>
+                If you think you may have a medical emergency, call your doctor or emergency 
+                services immediately. CoachMeld is not intended for medical emergencies.
+              </Text>
+            </View>
+
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              AI-Generated Content
+            </Text>
+
+            <Text style={[styles.disclaimerText, { color: theme.textSecondary }]}>
+              Responses from our coaches are generated by artificial intelligence based on 
+              curated knowledge sources. While we strive for accuracy, AI responses may 
+              contain errors or outdated information. Always verify important information 
+              with qualified professionals.
+            </Text>
+
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Your Responsibility
+            </Text>
+
+            <Text style={[styles.disclaimerText, { color: theme.textSecondary }]}>
+              By using CoachMeld, you acknowledge that:
+            </Text>
+
+            <View style={styles.bulletList}>
+              <Text style={[styles.bulletPoint, { color: theme.textSecondary }]}>
+                • You will consult healthcare providers before making significant dietary changes
+              </Text>
+              <Text style={[styles.bulletPoint, { color: theme.textSecondary }]}>
+                • You understand that results vary by individual
+              </Text>
+              <Text style={[styles.bulletPoint, { color: theme.textSecondary }]}>
+                • You will not use this app as your sole source of health information
+              </Text>
+              <Text style={[styles.bulletPoint, { color: theme.textSecondary }]}>
+                • You are responsible for your own health decisions
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => Linking.openURL('https://coachmeld.com/terms')}
+            >
+              <Text style={[styles.linkText, { color: theme.primary }]}>
+                Read Full Terms of Service
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => Linking.openURL('https://coachmeld.com/privacy')}
+            >
+              <Text style={[styles.linkText, { color: theme.primary }]}>
+                Read Privacy Policy
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.declineButton, { borderColor: theme.error }]}
+              onPress={onDecline}
+            >
+              <Text style={[styles.buttonText, { color: theme.error }]}>Decline</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.acceptButton, { backgroundColor: theme.primary }]}
+              onPress={handleAccept}
+            >
+              <Text style={[styles.buttonText, { color: '#ffffff' }]}>
+                I Understand and Accept
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    margin: 20,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    maxHeight: '90%',
+    width: '90%',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  disclaimerText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  warningBox: {
+    flexDirection: 'row',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    alignItems: 'flex-start',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    alignItems: 'flex-start',
+  },
+  emergencyBox: {
+    flexDirection: 'row',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    alignItems: 'flex-start',
+  },
+  warningText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  emergencyText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  bulletList: {
+    marginLeft: 10,
+    marginBottom: 15,
+  },
+  bulletPoint: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 5,
+  },
+  linkText: {
+    fontSize: 14,
+    textDecorationLine: 'underline',
+    marginVertical: 5,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  button: {
+    borderRadius: 10,
+    padding: 15,
+    elevation: 2,
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  declineButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
+  acceptButton: {
+    flex: 2,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});

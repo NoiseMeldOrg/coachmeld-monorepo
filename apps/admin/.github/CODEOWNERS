@@ -1,0 +1,17 @@
+# This file defines code ownership for automatic review requests
+# Syntax: <pattern> <owner>
+
+# Global ownership
+* @intrototheworld
+
+# Documentation
+*.md @intrototheworld
+/docs/ @intrototheworld
+
+# Configuration files
+/.github/ @intrototheworld
+/package.json @intrototheworld
+/package-lock.json @intrototheworld
+
+# Database migrations require careful review
+/supabase/migrations/ @intrototheworld

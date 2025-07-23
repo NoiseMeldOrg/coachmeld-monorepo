@@ -1,0 +1,40 @@
+{
+  "name": "coachmeld-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CoachMeld monorepo containing mobile app, admin dashboard, landing page, and shared packages",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "echo 'Please specify which app to run:'",
+    "mobile": "cd apps/mobile && bun expo start",
+    "web": "cd apps/mobile && bun expo start --web",
+    "ios": "cd apps/mobile && bun expo run:ios",
+    "android": "./scripts/android.sh",
+    "admin": "cd apps/admin && bun dev",
+    "build:admin": "cd apps/admin && bun run build",
+    "build:web": "cd apps/mobile && bun expo export -p web",
+    "build:mobile": "cd apps/mobile && bun expo build",
+    "install:all": "bun install",
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules",
+    "type-check": "bun run type-check:mobile && bun run type-check:admin",
+    "type-check:mobile": "cd apps/mobile && bun tsc --noEmit",
+    "type-check:admin": "cd apps/admin && bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NoiseMeldOrg/coachmeld-monorepo.git"
+  },
+  "author": "NoiseMeld",
+  "license": "MIT"
+}

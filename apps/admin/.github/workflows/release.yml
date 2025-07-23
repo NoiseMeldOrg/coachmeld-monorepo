@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build and Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test -- --passWithNoTests
+      
+    - name: Build project
+      run: npm run build
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co' }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'example-anon-key' }}
+      
+    - name: Create deployment package
+      run: |
+        # Create a deployment package with built files
+        # List of files/directories to include
+        FILES=".next package.json package-lock.json"
+        
+        # Add optional files if they exist
+        [ -f "next.config.js" ] && FILES="$FILES next.config.js"
+        [ -f ".env.local.example" ] && FILES="$FILES .env.local.example"
+        [ -d "public" ] && [ "$(ls -A public)" ] && FILES="$FILES public"
+        
+        tar -czf coach-meld-admin-${{ github.ref_name }}.tar.gz $FILES
+      
+    - name: Extract version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+    - name: Read CHANGELOG
+      id: changelog
+      run: |
+        VERSION="${{ steps.version.outputs.VERSION }}"
+        if [ -f "CHANGELOG.md" ]; then
+          CHANGELOG=$(awk "/## \[$VERSION\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No changelog entry found for version $VERSION"
+          fi
+        else
+          CHANGELOG="No CHANGELOG.md file found"
+        fi
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ steps.version.outputs.VERSION }}
+        name: CoachMeld Admin v${{ steps.version.outputs.VERSION }}
+        body: |
+          ## What's Changed
+          ${{ steps.changelog.outputs.CHANGELOG }}
+          
+          ## Deployment
+          1. Download the deployment package below
+          2. Extract to your server
+          3. Set up environment variables from `.env.local.example`
+          4. Run `npm install --production`
+          5. Run `npm start` or use PM2/systemd
+          
+          ## Database Migrations
+          Check the release notes for any required database migrations.
+          
+          ## Full Changelog
+          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for complete version history.
+        files: |
+          coach-meld-admin-${{ github.ref_name }}.tar.gz
+        draft: false
+        prerelease: false
