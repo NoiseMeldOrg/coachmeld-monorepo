@@ -222,21 +222,40 @@ function AppContent() {
 }
 
 export default function App() {
-  return (
-    <ThemeProvider>
-      <AuthProvider>
-        <UserProvider>
-          <StripeProviderWrapper>
-            <CoachProvider>
-              <SubscriptionProvider>
-                <AppContent />
-              </SubscriptionProvider>
-            </CoachProvider>
-          </StripeProviderWrapper>
-        </UserProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  );
+  // Add error boundary and debug logging for web deployment
+  React.useEffect(() => {
+    console.log('App starting...');
+    console.log('Platform:', Platform.OS);
+    console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
+    console.log('Environment vars available:', Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC')));
+  }, []);
+
+  try {
+    return (
+      <ThemeProvider>
+        <AuthProvider>
+          <UserProvider>
+            <StripeProviderWrapper>
+              <CoachProvider>
+                <SubscriptionProvider>
+                  <AppContent />
+                </SubscriptionProvider>
+              </CoachProvider>
+            </StripeProviderWrapper>
+          </UserProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    );
+  } catch (error) {
+    console.error('App crashed:', error);
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ color: 'red', textAlign: 'center' }}>
+          App Error: {error.message}
+        </Text>
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({});
