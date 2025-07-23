@@ -18,7 +18,11 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, 'node_modules'),
 ];
 
-// 3. Force Metro to resolve workspace packages correctly
+// Add web-specific platform extensions
+config.resolver.platforms = ['web', 'ios', 'android', 'native'];
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'web.js', 'web.ts', 'web.tsx'];
+
+// 3. Force Metro to resolve workspace packages correctly and handle web platform
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName.startsWith('@coachmeld/')) {
     // Resolve workspace packages
@@ -27,6 +31,35 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       filePath: path.resolve(monorepoRoot, 'packages', packageName, 'src', 'index.ts'),
       type: 'sourceFile',
     };
+  }
+  
+  // Handle React Native web compatibility
+  if (platform === 'web') {
+    // Map React Native internal modules to react-native-web equivalents
+    if (moduleName.includes('react-native/Libraries/Utilities/Platform')) {
+      return {
+        filePath: require.resolve('react-native-web/dist/exports/Platform'),
+        type: 'sourceFile',
+      };
+    }
+    
+    // Handle other React Native internal utilities
+    if (moduleName.includes('react-native/Libraries/')) {
+      // Try to resolve from react-native-web first
+      try {
+        const webModule = moduleName.replace('react-native/Libraries/', 'react-native-web/dist/exports/');
+        return {
+          filePath: require.resolve(webModule),
+          type: 'sourceFile',
+        };
+      } catch {
+        // If not found in react-native-web, return empty module
+        return {
+          filePath: require.resolve('react-native-web/dist/exports/View'),
+          type: 'sourceFile',
+        };
+      }
+    }
   }
   
   // Default resolution for other modules
