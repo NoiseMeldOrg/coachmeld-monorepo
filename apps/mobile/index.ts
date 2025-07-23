@@ -1,5 +1,8 @@
 import { registerRootComponent } from 'expo';
 
+// Import web polyfills for React Native modules
+import 'react-native-url-polyfill/auto';
+
 import App from './App';
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

@@ -60,6 +60,7 @@
     "@types/react": "~19.0.10",
     "eas-cli": "^16.11.0",
     "supabase": "^2.26.9",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "@expo/cli": "^0.21.7"
   }
 }
