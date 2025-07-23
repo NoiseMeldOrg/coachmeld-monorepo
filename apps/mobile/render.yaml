@@ -4,7 +4,7 @@ services:
     runtime: node
     region: oregon
     plan: starter # Change to 'standard' for production
-    buildCommand: cd apps/mobile && npm ci && npm run build:web
+    buildCommand: cd apps/mobile; npm ci; npm run build:web
     staticPublishPath: ./apps/mobile/dist
     pullRequestPreviewsEnabled: true
     envVars:
