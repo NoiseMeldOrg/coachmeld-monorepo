@@ -5,6 +5,7 @@ import { ConversationMemoryService } from '../conversationMemoryService';
 import { GeminiChatService } from '../geminiChatService';
 import { getCoachKnowledge, searchKnowledge, getCoachFAQs } from '../../data/knowledge';
 import { supabase } from '../../lib/supabase';
+import { logger } from '../../../../../packages/shared-utils/src/logger';
 
 interface CoachContext {
   coachId: string;
@@ -102,7 +103,11 @@ export class RAGCoachService {
       
       return response;
     } catch (error) {
-      console.error('Error in RAG coach service:', error);
+      logger.error('Error in RAG coach service', { 
+        coachId: this.coachContext.coachId, 
+        message, 
+        error 
+      });
       // Fallback to basic response
       return this.generateFallbackResponse(message);
     }
@@ -125,7 +130,10 @@ export class RAGCoachService {
           .replace(/{{specialties}}/g, this.coachContext.specialties.join(', '));
       }
     } catch (error) {
-      console.error('Error fetching system prompt from database:', error);
+      logger.error('Error fetching system prompt from database', { 
+        coachId: this.coachContext.coachId, 
+        error 
+      });
     }
 
     // Fallback to default prompt
@@ -240,17 +248,18 @@ User Profile:
   ): Promise<string> {
     try {
       // Try to use Gemini API if available
-      console.log('Attempting Gemini API call...');
+      logger.debug('Attempting Gemini API call', { coachId: this.coachContext.coachId });
       
       // Only log for testing user
       if (userContextData?.userId === '18b842cb-f267-40ff-a6c3-50e32f157e89') {
-        console.log('=== RAG CONTEXT BEING SENT ===');
-        console.log('System Prompt:', systemPrompt?.substring(0, 200) + '...');
-        console.log('User Context:', userContext);
-        console.log('Knowledge Context Length:', knowledgeContext.length);
-        console.log('Knowledge Context:', knowledgeContext);
-        console.log('Max Output Tokens:', 256);
-        console.log('=============================');
+        logger.debug('RAG context for test user', {
+          coachId: this.coachContext.coachId,
+          systemPromptPreview: systemPrompt?.substring(0, 200) + '...',
+          userContext,
+          knowledgeContextLength: knowledgeContext.length,
+          knowledgeContext,
+          maxOutputTokens: 256
+        });
       }
       
       const response = await GeminiChatService.generateResponse(
@@ -268,17 +277,20 @@ User Profile:
         }
       );
       
-      console.log('Gemini API response received successfully');
+      logger.info('Gemini API response received successfully', { 
+        coachId: this.coachContext.coachId 
+      });
       return response;
     } catch (error) {
-      console.error('Gemini API error:', error);
       const errorObj = error as Error;
-      console.error('Error details:', {
-        message: errorObj.message,
-        name: errorObj.name,
-        stack: errorObj.stack?.split('\n').slice(0, 3).join('\n')
+      logger.error('Gemini API error, falling back to template responses', {
+        coachId: this.coachContext.coachId,
+        error: {
+          message: errorObj.message,
+          name: errorObj.name,
+          stack: errorObj.stack?.split('\n').slice(0, 3).join('\n')
+        }
       });
-      console.log('Falling back to template responses');
       // Fall back to template-based responses
     }
     

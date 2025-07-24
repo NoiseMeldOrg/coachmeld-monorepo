@@ -39,6 +39,7 @@ import { CoachSelectorPanel } from '../components/CoachSelectorPanel';
 import { LegendList, LegendListRef } from '@legendapp/list';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { logger } from '../../../../packages/shared-utils/src/logger';
 
 export const CoachChatScreen: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
@@ -96,12 +97,13 @@ export const CoachChatScreen: React.FC = () => {
     return () => clearTimeout(timeout1);
   }, []);
   
-  // Debug logging for messages (remove in production)
-  console.log('CoachChatScreen - Debug info:');
-  console.log('- messagesLoading:', messagesLoading);
-  console.log('- activeCoach:', activeCoach ? activeCoach.id : 'null');
-  console.log('- total messages:', messages.length);
-  console.log('- coachMessages:', coachMessages.length);
+  // Debug logging for messages (can be removed in production)
+  logger.debug('CoachChatScreen debug info', {
+    messagesLoading,
+    activeCoachId: activeCoach?.id || null,
+    totalMessages: messages.length,
+    coachMessages: coachMessages.length
+  });
 
 
   // Load messages when coach changes
@@ -447,7 +449,10 @@ export const CoachChatScreen: React.FC = () => {
           extraData={theme}
           style={styles.messagesList}
           renderItem={({ item }) => {
-            console.log('LegendList rendering item:', item.id, item.text.substring(0, 20) + '...');
+            logger.debug('LegendList rendering message item', { 
+              itemId: item.id, 
+              textPreview: item.text.substring(0, 20) + '...' 
+            });
             
             const isSender = item.sender === 'user';
             

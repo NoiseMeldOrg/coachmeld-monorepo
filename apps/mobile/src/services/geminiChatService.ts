@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { logger } from '../../../../packages/shared-utils/src/logger';
 
 export interface GeminiChatOptions {
   temperature?: number;
@@ -34,10 +35,10 @@ export class GeminiChatService {
   ): Promise<string> {
     try {
       // Check if user is authenticated
-      console.log('[GeminiChat] Checking authentication...');
+      logger.debug('Checking authentication for Gemini chat');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      console.log('[GeminiChat] Session check:', {
+      logger.debug('Session check completed', {
         hasSession: !!session,
         sessionError: sessionError?.message,
         userId: session?.user?.id,
@@ -46,12 +47,12 @@ export class GeminiChatService {
       });
       
       if (sessionError || !session) {
-        console.error('[GeminiChat] No active session for Gemini chat');
+        logger.error('No active session for Gemini chat', { sessionError });
         throw new Error('Authentication required');
       }
 
       // Call the edge function with proper authentication
-      console.log('[GeminiChat] Calling edge function...');
+      logger.debug('Calling Gemini edge function');
       const { data, error } = await supabase.functions.invoke('chat-completion', {
         body: {
           prompt,
@@ -63,7 +64,7 @@ export class GeminiChatService {
         },
       });
       
-      console.log('[GeminiChat] Edge function response:', {
+      logger.debug('Gemini edge function response', {
         hasData: !!data,
         hasError: !!error,
         errorMessage: error?.message,
@@ -73,12 +74,14 @@ export class GeminiChatService {
       });
 
       if (error) {
-        console.error('Edge function error:', error);
-        console.error('Error details:', {
-          message: error.message,
-          details: error.details,
-          context: error.context,
-          code: error.code
+        logger.error('Gemini edge function error', {
+          error,
+          errorDetails: {
+            message: error.message,
+            details: error.details,
+            context: error.context,
+            code: error.code
+          }
         });
         
         // Check for specific error types
@@ -95,7 +98,7 @@ export class GeminiChatService {
 
       // Log token usage if available
       if (data.usage) {
-        console.log('Token usage:', {
+        logger.info('Gemini token usage', {
           prompt: data.usage.promptTokens,
           completion: data.usage.completionTokens,
           total: data.usage.totalTokens,
@@ -104,7 +107,7 @@ export class GeminiChatService {
 
       return data.response;
     } catch (error) {
-      console.error('Error generating chat response:', error);
+      logger.error('Error generating chat response', { error });
       
       const errorObj = error as Error;
       // Provide more specific error messages
@@ -141,7 +144,7 @@ export class GeminiChatService {
 
       return response.toLowerCase().includes('ok');
     } catch (error) {
-      console.log('Gemini API availability check failed:', error);
+      logger.debug('Gemini API availability check failed', { error });
       return false;
     }
   }

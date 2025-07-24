@@ -1,6 +1,7 @@
 import { dietKnowledgeMap, DietKnowledge } from '../data/knowledge';
 import { supabase } from '../lib/supabase';
 import { geminiClientService } from './geminiClientService';
+import { logger } from '../../../../packages/shared-utils/src/logger';
 
 interface KnowledgeChunk {
   coachId: string;
@@ -57,11 +58,11 @@ export class KnowledgeEmbeddingService {
 
   // Embed and store knowledge for a specific coach
   static async embedCoachKnowledge(coachId: string): Promise<void> {
-    console.log(`Starting to embed knowledge for coach: ${coachId}`);
+    logger.info('Starting knowledge embedding for coach', { coachId });
     
     try {
       const chunks = await this.prepareKnowledgeChunks(coachId);
-      console.log(`Prepared ${chunks.length} chunks for ${coachId}`);
+      logger.info('Prepared knowledge chunks', { coachId, chunkCount: chunks.length });
 
       // Check if knowledge already exists
       const { data: existingDocs, error: checkError } = await supabase
@@ -72,13 +73,13 @@ export class KnowledgeEmbeddingService {
         .limit(1);
 
       if (checkError) {
-        console.error('Error checking existing knowledge:', checkError);
+        logger.error('Error checking existing knowledge', { coachId, error: checkError });
         throw checkError;
       }
 
       // If knowledge exists, delete old entries first
       if (existingDocs && existingDocs.length > 0) {
-        console.log(`Deleting existing knowledge for ${coachId}`);
+        logger.info('Deleting existing knowledge', { coachId });
         const { error: deleteError } = await supabase
           .from('user_documents')
           .delete()
@@ -86,7 +87,7 @@ export class KnowledgeEmbeddingService {
           .eq('source_type', 'knowledge_base');
 
         if (deleteError) {
-          console.error('Error deleting old knowledge:', deleteError);
+          logger.error('Error deleting old knowledge', { coachId, error: deleteError });
           throw deleteError;
         }
       }
@@ -121,16 +122,20 @@ export class KnowledgeEmbeddingService {
           .insert(embeddings);
 
         if (insertError) {
-          console.error('Error inserting embeddings:', insertError);
+          logger.error('Error inserting embeddings', { coachId, error: insertError });
           throw insertError;
         }
 
-        console.log(`Processed ${i + batch.length}/${chunks.length} chunks for ${coachId}`);
+        logger.info('Processed knowledge chunk batch', { 
+          coachId, 
+          processed: i + batch.length, 
+          total: chunks.length 
+        });
       }
 
-      console.log(`Successfully embedded all knowledge for ${coachId}`);
+      logger.info('Successfully embedded all knowledge', { coachId });
     } catch (error) {
-      console.error(`Failed to embed knowledge for ${coachId}:`, error);
+      logger.error('Failed to embed knowledge', { coachId, error });
       throw error;
     }
   }
@@ -138,18 +143,18 @@ export class KnowledgeEmbeddingService {
   // Embed knowledge for all coaches
   static async embedAllCoachKnowledge(): Promise<void> {
     const coachIds = Object.keys(dietKnowledgeMap);
-    console.log(`Starting to embed knowledge for ${coachIds.length} coaches`);
+    logger.info('Starting knowledge embedding for all coaches', { coachCount: coachIds.length });
 
     for (const coachId of coachIds) {
       try {
         await this.embedCoachKnowledge(coachId);
-        console.log(`✓ Completed ${coachId}`);
+        logger.info('Coach knowledge embedding completed', { coachId });
       } catch (error) {
-        console.error(`✗ Failed ${coachId}:`, error);
+        logger.error('Coach knowledge embedding failed', { coachId, error });
       }
     }
 
-    console.log('Finished embedding all coach knowledge');
+    logger.info('Finished embedding all coach knowledge');
   }
 
   // Search knowledge base using embeddings
@@ -175,7 +180,7 @@ export class KnowledgeEmbeddingService {
       });
 
       if (error) {
-        console.error('Knowledge search error:', error);
+        logger.error('Knowledge search error', { coachId, query, error });
         throw error;
       }
 
@@ -185,7 +190,7 @@ export class KnowledgeEmbeddingService {
         similarity: doc.similarity
       }));
     } catch (error) {
-      console.error('Failed to search knowledge:', error);
+      logger.error('Failed to search knowledge', { coachId, query, error });
       return [];
     }
   }
