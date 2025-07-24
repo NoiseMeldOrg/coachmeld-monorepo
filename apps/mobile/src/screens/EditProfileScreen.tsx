@@ -9,6 +9,7 @@ import {
   Platform,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -518,6 +519,26 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ isFromTab 
             label="Saved Recipes"
             value=""
             onPress={() => navigation.navigate('SavedRecipes' as any)}
+            showArrow
+            isLast
+          />
+        </View>
+
+        {/* Legal Section */}
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+            Legal
+          </Text>
+          <ProfileSettingRow
+            label="Privacy Policy"
+            value=""
+            onPress={() => navigation.navigate('PrivacyPolicy' as any)}
+            showArrow
+          />
+          <ProfileSettingRow
+            label="Terms of Service"
+            value=""
+            onPress={() => Linking.openURL('https://coachmeld.com/terms')}
             showArrow
             isLast
           />

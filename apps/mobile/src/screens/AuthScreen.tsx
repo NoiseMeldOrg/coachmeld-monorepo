@@ -9,7 +9,9 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -28,7 +30,17 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const handlePrivacyPolicyPress = () => {
+    // Navigate to Privacy Policy screen if in app context, otherwise open web link
+    try {
+      navigation.navigate('PrivacyPolicy');
+    } catch (error) {
+      Linking.openURL('https://coachmeld.com/privacy');
+    }
+  };
 
   const handleSubmit = async () => {
     if (!email || (mode !== 'forgotPassword' && !password)) {
@@ -48,6 +60,11 @@ export default function AuthScreen() {
       return;
     }
 
+    if (mode === 'signUp' && !privacyAccepted) {
+      Alert.alert('Privacy Policy Required', 'You must accept the Privacy Policy to create an account');
+      return;
+    }
+
     // Validate password for signup
     if (mode === 'signUp' && password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters long');
@@ -64,7 +81,7 @@ export default function AuthScreen() {
           result = await signIn(email, password);
           break;
         case 'signUp':
-          result = await signUp(email, password, fullName);
+          result = await signUp(email, password, fullName, privacyAccepted);
           break;
         case 'forgotPassword':
           result = await resetPassword(email);
@@ -184,6 +201,38 @@ export default function AuthScreen() {
               onChangeText={setPassword}
               secureTextEntry
             />
+          )}
+
+          {mode === 'signUp' && (
+            <TouchableOpacity
+              style={styles.privacyContainer}
+              onPress={() => setPrivacyAccepted(!privacyAccepted)}
+              activeOpacity={0.7}
+            >
+              <View style={[
+                styles.checkbox,
+                {
+                  borderColor: theme.border,
+                  backgroundColor: privacyAccepted ? theme.primary : 'transparent',
+                }
+              ]}>
+                {privacyAccepted && (
+                  <Ionicons name="checkmark" size={16} color="white" />
+                )}
+              </View>
+              <View style={styles.privacyTextContainer}>
+                <Text style={[styles.privacyText, { color: theme.text }]}>
+                  I agree to the{' '}
+                  <Text 
+                    style={[styles.privacyLink, { color: theme.primary }]}
+                    onPress={handlePrivacyPolicyPress}
+                  >
+                    Privacy Policy
+                  </Text>
+                  {' '}and understand how my data will be processed.
+                </Text>
+              </View>
+            </TouchableOpacity>
           )}
 
           <TouchableOpacity
@@ -310,5 +359,33 @@ const styles = StyleSheet.create({
   },
   switchText: {
     fontSize: 16,
+  },
+  privacyContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 16,
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  privacyTextContainer: {
+    flex: 1,
+  },
+  privacyText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  privacyLink: {
+    textDecorationLine: 'underline',
+    fontWeight: '500',
   },
 });

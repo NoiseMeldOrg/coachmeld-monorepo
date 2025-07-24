@@ -32,6 +32,7 @@ import { EditProfileScreen } from './src/screens/EditProfileScreen';
 import { EditProfileFieldScreen } from './src/screens/EditProfileFieldScreen';
 import { CoachChatScreen } from './src/screens/CoachChatScreen';
 import { SavedRecipesScreen } from './src/screens/SavedRecipesScreen';
+import { PrivacyPolicyScreen } from './src/screens/PrivacyPolicyScreen';
 
 const Stack = createStackNavigator();
 
@@ -202,6 +203,27 @@ function AppContent() {
               component={SavedRecipesScreen} 
               options={{
                 headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="PrivacyPolicy" 
+              component={PrivacyPolicyScreen} 
+              options={{
+                headerShown: true,
+                headerTitle: 'Privacy Policy',
+                headerBackTitle: 'Back',
+                headerStyle: {
+                  backgroundColor: theme.headerBackground,
+                  elevation: 0,
+                  shadowOpacity: 0,
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.border,
+                },
+                headerTintColor: theme.text,
+                headerTitleStyle: {
+                  color: theme.text,
+                  fontWeight: '600',
+                },
               }}
             />
           </>
