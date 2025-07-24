@@ -65,8 +65,10 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/ban-ts-comment': 'warn',
       
-      // General rules
-      'no-console': 'warn',
+      // General rules - Code Quality Improvements
+      'no-console': ['warn', { 
+        allow: ['warn', 'error'] // Allow console.warn and console.error, but warn on console.log
+      }],
       'no-debugger': 'warn',
       'prefer-const': 'warn',
       'no-var': 'warn',
