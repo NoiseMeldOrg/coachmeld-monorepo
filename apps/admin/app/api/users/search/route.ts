@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createLogger } from '@coachmeld/shared-utils'
+
+const logger = createLogger('UserSearch');
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +29,7 @@ export async function GET(request: NextRequest) {
       .limit(1)
 
     if (error) {
-      console.error('Error searching for user:', error)
+      logger.error('Error searching for user', error, { email })
       return NextResponse.json({ error: 'Failed to search for user' }, { status: 500 })
     }
 
@@ -43,7 +46,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error: any) {
-    console.error('Unexpected error:', error)
+    logger.error('Unexpected error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { Coach, Subscription, UserCoachPreferences } from '../types';
 import { supabase } from '../lib/supabase';
+import { createLogger } from '@coachmeld/shared-utils';
+
+const logger = createLogger('CoachContext');
 
 interface CoachContextType {
   coaches: Coach[];
@@ -104,7 +107,7 @@ export const CoachProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (profileError) {
         // If profile doesn't exist (PGRST116), try to ensure it exists
         if (profileError.code === 'PGRST116') {
-          console.log('Profile not found, attempting to create...');
+          logger.info('Profile not found, attempting to create', { userId: user.id });
           try {
             const { data: ensureResult, error: ensureError } = await supabase
               .rpc('ensure_profile_exists', { user_id: user.id });
@@ -122,20 +125,20 @@ export const CoachProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 setIsTestUser(retryData.is_test_user || false);
               } else {
                 // Still failed, use default
-                console.error('Failed to fetch profile after creation:', retryError);
+                logger.error('Failed to fetch profile after creation', retryError);
                 setIsTestUser(false);
               }
             } else {
-              console.error('Failed to ensure profile exists:', ensureError);
+              logger.error('Failed to ensure profile exists', ensureError);
               setIsTestUser(false);
             }
           } catch (err) {
-            console.error('Error ensuring profile exists:', err);
+            logger.error('Error ensuring profile exists', err);
             setIsTestUser(false);
           }
         } else {
           // Other error, log it but don't throw
-          console.error('Error fetching profile:', profileError);
+          logger.error('Error fetching profile', profileError);
           setIsTestUser(false);
         }
       } else {
@@ -184,9 +187,12 @@ export const CoachProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCoaches(formattedCoaches);
       setSubscriptions(subscriptionsData);
       
-      console.log('CoachContext - User:', user.email, 'isTestUser:', isTestUser);
-      console.log('CoachContext - Subscriptions:', subscriptionsData.length, subscriptionsData);
-      console.log('CoachContext - Coaches with access:', formattedCoaches.filter(c => c.hasActiveSubscription).map(c => c.name));
+      logger.info('Coach data loaded successfully', { 
+        userEmail: user.email, 
+        isTestUser, 
+        subscriptionCount: subscriptionsData.length,
+        coachesWithAccess: formattedCoaches.filter(c => c.hasActiveSubscription).map(c => c.name)
+      });
 
       // Set preferences or create default
       if (preferencesData) {
@@ -211,7 +217,7 @@ export const CoachProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
     } catch (err) {
-      console.error('Error loading coach data:', err);
+      logger.error('Error loading coach data', err);
       setError(err instanceof Error ? err.message : 'Failed to load coaches');
     } finally {
       setLoading(false);
@@ -242,7 +248,7 @@ export const CoachProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         lastUsedCoachId: defaultCoachId,
       });
     } catch (err) {
-      console.error('Error creating default preferences:', err);
+      logger.error('Error creating default preferences', err);
     }
   };
 
@@ -280,7 +286,7 @@ export const CoachProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     } catch (err) {
-      console.error('Error switching coach:', err);
+      logger.error('Error switching coach', err, { coachId });
       setError('Failed to switch coach');
     }
   };
@@ -317,7 +323,7 @@ export const CoachProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setActiveCoach({ ...activeCoach, customName: name });
       }
     } catch (err) {
-      console.error('Error setting custom coach name:', err);
+      logger.error('Error setting custom coach name', err, { coachId, name });
       setError('Failed to update coach name');
     }
   };

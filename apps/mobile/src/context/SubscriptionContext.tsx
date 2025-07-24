@@ -4,6 +4,9 @@ import { Subscription } from '../types';
 import { supabase } from '../lib/supabase';
 import { stripeService } from '../services/stripeService';
 import { STRIPE_CONFIG } from '../config/stripe';
+import { createLogger } from '@coachmeld/shared-utils';
+
+const logger = createLogger('SubscriptionContext');
 
 interface SubscriptionContextType {
   subscriptions: Subscription[];
@@ -64,7 +67,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // First check if user still exists
       const { data: authUser, error: authError } = await supabase.auth.getUser();
       if (authError || !authUser.user) {
-        console.log('User no longer authenticated, skipping subscription load');
+        logger.info('User no longer authenticated, skipping subscription load');
         setSubscriptions([]);
         setHasActiveSubscription(false);
         setRemainingFreeMessages(10);
@@ -114,13 +117,13 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
           setRemainingFreeMessages(-1); // Unlimited for pro users
         }
       } catch (stripeError) {
-        console.error('Error checking Stripe status:', stripeError);
+        logger.error('Error checking Stripe status', stripeError);
         // Don't fail the whole load if Stripe check fails
         setHasActiveSubscription(false);
         setRemainingFreeMessages(10);
       }
     } catch (err) {
-      console.error('Error loading subscriptions:', err);
+      logger.error('Error loading subscriptions', err);
       // Don't show error toast for expected scenarios
       if (err instanceof Error && err.message.includes('JWT')) {
         // User session is invalid, don't show error
@@ -169,7 +172,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       await loadSubscriptions();
     } catch (err) {
-      console.error('Error creating test subscription:', err);
+      logger.error('Error creating test subscription', err, { coachId });
       setError(err instanceof Error ? err.message : 'Failed to create test subscription');
     }
   };
@@ -192,7 +195,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       await loadSubscriptions();
     } catch (err) {
-      console.error('Error cancelling test subscription:', err);
+      logger.error('Error cancelling test subscription', err, { coachId });
       setError(err instanceof Error ? err.message : 'Failed to cancel test subscription');
     }
   };
@@ -219,7 +222,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       await loadSubscriptions();
     } catch (err) {
-      console.error('Error updating test subscription:', err);
+      logger.error('Error updating test subscription', err, { subscriptionId, status });
       setError(err instanceof Error ? err.message : 'Failed to update test subscription');
     }
   };
@@ -232,9 +235,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Get the price ID based on plan type
       const priceId = STRIPE_CONFIG.plans[planType].priceId;
       
-      console.log('SubscriptionContext - Plan type:', planType);
-      console.log('SubscriptionContext - Price ID:', priceId);
-      console.log('SubscriptionContext - STRIPE_CONFIG:', STRIPE_CONFIG);
+      logger.debug('Starting subscription process', { 
+        planType, 
+        priceId,
+        stripeConfigKeys: Object.keys(STRIPE_CONFIG)
+      });
       
       if (!priceId) {
         throw new Error('Price ID not configured');
