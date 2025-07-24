@@ -1,4 +1,5 @@
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
+const webpack = require('webpack');
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(
@@ -26,6 +27,14 @@ module.exports = async function (env, argv) {
     stream: false,
     assert: false,
   };
+
+  // Provide React globally to prevent hook import issues
+  config.plugins = [
+    ...config.plugins,
+    new webpack.ProvidePlugin({
+      React: 'react',
+    }),
+  ];
 
   return config;
 };

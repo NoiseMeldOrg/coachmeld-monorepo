@@ -22,6 +22,13 @@ config.resolver.nodeModulesPaths = [
 config.resolver.platforms = ['web', 'ios', 'android', 'native'];
 config.resolver.sourceExts = [...config.resolver.sourceExts, 'web.js', 'web.ts', 'web.tsx'];
 
+// Add alias for React to ensure proper resolution
+config.resolver.alias = {
+  ...config.resolver.alias,
+  'react': require.resolve('react'),
+  'react-native': require.resolve('react-native-web'),
+};
+
 // 3. Force Metro to resolve workspace packages correctly and handle web platform
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName.startsWith('@coachmeld/')) {
