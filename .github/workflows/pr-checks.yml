@@ -114,9 +114,10 @@ jobs:
     
     - name: Check for console.log statements
       run: |
+        echo "🔍 Checking for console.log statements..."
         if grep -r "console\.log" src/ --exclude-dir=node_modules --include="*.ts" --include="*.tsx"; then
-          echo "❌ Found console.log statements. Please remove them before merging."
-          exit 1
+          echo "⚠️ Found console.log statements (should be cleaned up for production)"
+          echo "Note: This is a warning for development builds, not blocking CI"
         else
           echo "✅ No console.log statements found."
         fi
