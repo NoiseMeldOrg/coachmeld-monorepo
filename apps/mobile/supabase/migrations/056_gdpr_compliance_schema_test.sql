@@ -127,7 +127,7 @@ SELECT 'PASS: RLS policies created' as test_result
 WHERE (
   SELECT COUNT(*) FROM pg_policies 
   WHERE tablename IN ('gdpr_consent_records', 'gdpr_data_requests', 'data_processing_records', 'gdpr_audit_log')
-) >= 8; -- Should have at least 8 policies across all tables
+) >= 9; -- Should have at least 9 policies across all tables
 
 -- ================================
 -- 5. TEST DATABASE FUNCTIONS

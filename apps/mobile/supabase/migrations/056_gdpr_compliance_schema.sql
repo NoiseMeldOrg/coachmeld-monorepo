@@ -108,49 +108,29 @@ CREATE POLICY "Users can insert own consent records" ON gdpr_consent_records
 CREATE POLICY "Users can update own consent records" ON gdpr_consent_records
   FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can view all consent records" ON gdpr_consent_records
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND is_admin = true
-    )
-  );
+CREATE POLICY "Service role has full access to consent records" ON gdpr_consent_records
+  FOR ALL USING (auth.role() = 'service_role');
 
 -- gdpr_data_requests policies
 CREATE POLICY "Users can manage own GDPR requests" ON gdpr_data_requests
   FOR ALL USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can manage all GDPR requests" ON gdpr_data_requests
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND is_admin = true
-    )
-  );
+CREATE POLICY "Service role has full access to GDPR requests" ON gdpr_data_requests
+  FOR ALL USING (auth.role() = 'service_role');
 
 -- data_processing_records policies (read-only for users, full access for admins)
 CREATE POLICY "Users can view data processing records" ON data_processing_records
   FOR SELECT USING (is_active = true);
 
-CREATE POLICY "Admins can manage data processing records" ON data_processing_records
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND is_admin = true
-    )
-  );
+CREATE POLICY "Service role has full access to data processing records" ON data_processing_records
+  FOR ALL USING (auth.role() = 'service_role');
 
 -- gdpr_audit_log policies
 CREATE POLICY "Users can view own audit logs" ON gdpr_audit_log
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can view all audit logs" ON gdpr_audit_log
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = auth.uid() AND is_admin = true
-    )
-  );
+CREATE POLICY "Service role has full access to audit logs" ON gdpr_audit_log
+  FOR ALL USING (auth.role() = 'service_role');
 
 CREATE POLICY "System can insert audit logs" ON gdpr_audit_log
   FOR INSERT WITH CHECK (true); -- Allow system to insert audit logs
