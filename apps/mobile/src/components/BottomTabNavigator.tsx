@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +24,7 @@ export const BottomTabNavigator: React.FC = () => {
   
   // Ensure navigation bar style is applied when tab navigator is focused
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       if (Platform.OS === 'android') {
         NavigationBar.setButtonStyleAsync(isDark ? 'light' : 'dark').catch(() => {});
       }
