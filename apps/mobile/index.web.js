@@ -1,8 +1,11 @@
 import 'react-native-url-polyfill/auto';
-import './src/utils/reactSetup.web.js';
-import { AppRegistry } from 'react-native';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import App from './App';
 
-// Register the app for web
-AppRegistry.registerComponent('main', () => App);
-AppRegistry.runApplication('main', { rootTag: document.getElementById('root') });
+console.log('Starting CoachMeld with React DOM...');
+
+// Use React DOM instead of AppRegistry to avoid renderer conflicts
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(React.createElement(App));
