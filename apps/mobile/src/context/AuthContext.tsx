@@ -4,6 +4,9 @@ import { Platform } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { checkAndEnrollTestUser } from '../utils/testUserUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createLogger } from '@coachmeld/shared-utils';
+
+const logger = createLogger('AuthContext');
 
 interface AuthContextType {
   user: User | null;
@@ -34,11 +37,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.error('Session error:', error);
+        logger.error('Session error', error);
         // Clear invalid session if refresh token is invalid
         if (error.message.includes('Refresh Token Not Found') || 
             error.message.includes('Invalid Refresh Token')) {
-          console.log('Clearing invalid session');
+          logger.info('Clearing invalid session');
           supabase.auth.signOut();
           setSession(null);
           setUser(null);
@@ -49,18 +52,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setLoading(false);
     }).catch((err) => {
-      console.error('Error getting session:', err);
+      logger.error('Error getting session', err);
       setLoading(false);
     });
 
     // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event);
+        logger.debug('Auth state change', { event });
         if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed successfully');
+          logger.debug('Token refreshed successfully');
         } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
+          logger.info('User signed out');
         }
         setSession(session);
         setUser(session?.user ?? null);
@@ -80,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error };
     } catch (err) {
-      console.error('Sign in error:', err);
+      logger.error('Sign in error', err);
       return { 
         error: { 
           message: err instanceof Error ? err.message : 'An error occurred during sign in' 
@@ -91,8 +94,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, fullName: string, privacyAccepted: boolean = false) => {
     try {
-      console.log('Starting signup for:', email);
-      console.log('Supabase client:', supabase ? 'Initialized' : 'Not initialized');
+      logger.info('Starting signup', { email });
+      logger.debug('Supabase client status', { initialized: !!supabase });
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -105,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        console.error('Signup error:', error);
+        logger.error('Signup error', error);
         return { error };
       }
 
@@ -121,8 +124,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         
         // The profile is created automatically by database trigger
-        console.log('User created successfully:', data.user.id);
-        console.log('Ensuring profile exists...');
+        logger.info('User created successfully', { userId: data.user.id });
+        logger.debug('Ensuring profile exists...');
         
         // Call the database function to ensure profile exists
         try {
@@ -130,29 +133,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .rpc('ensure_profile_exists', { user_id: data.user.id });
           
           if (profileError) {
-            console.error('Error ensuring profile exists:', profileError);
+            logger.error('Error ensuring profile exists', profileError);
           } else {
-            console.log('Profile ensure result:', profileResult);
+            logger.debug('Profile ensure result', { result: profileResult });
           }
         } catch (err) {
-          console.error('Failed to ensure profile exists:', err);
+          logger.error('Failed to ensure profile exists', err);
         }
         
         // Check and auto-enroll test users based on email domain
         if (data.user.email) {
-          console.log('Checking test user enrollment for:', data.user.email);
+          logger.info('Checking test user enrollment', { email: data.user.email });
           
           try {
             const enrollResult = await checkAndEnrollTestUser(data.user.email, data.user.id);
-            console.log('Test user enrollment result:', enrollResult);
+            logger.info('Test user enrollment result', { result: enrollResult });
           } catch (enrollError) {
-            console.error('Error during test user enrollment:', enrollError);
+            logger.error('Error during test user enrollment', enrollError);
           }
         }
         
         // Track privacy policy acceptance if provided
         if (privacyAccepted) {
-          console.log('Recording privacy policy acceptance for user:', data.user.id);
+          logger.info('Recording privacy policy acceptance', { userId: data.user.id });
           
           try {
             const { error: disclaimerError } = await supabase
@@ -166,9 +169,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               });
             
             if (disclaimerError) {
-              console.error('Error recording privacy policy acceptance:', disclaimerError);
+              logger.error('Error recording privacy policy acceptance', disclaimerError);
             } else {
-              console.log('Privacy policy acceptance recorded successfully');
+              logger.info('Privacy policy acceptance recorded successfully');
             }
             
             // Also update the GDPR consent fields in the profile
@@ -181,19 +184,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .eq('id', data.user.id);
             
             if (profileUpdateError) {
-              console.error('Error updating GDPR consent in profile:', profileUpdateError);
+              logger.error('Error updating GDPR consent in profile', profileUpdateError);
             } else {
-              console.log('GDPR consent updated in profile successfully');
+              logger.info('GDPR consent updated in profile successfully');
             }
           } catch (trackingError) {
-            console.error('Error tracking privacy policy acceptance:', trackingError);
+            logger.error('Error tracking privacy policy acceptance', trackingError);
           }
         }
       }
 
       return { error };
     } catch (err) {
-      console.error('Unexpected error during signup:', err);
+      logger.error('Unexpected error during signup', err);
       return { 
         error: { 
           message: err instanceof Error ? err.message : 'An unexpected error occurred during signup' 
@@ -221,9 +224,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await AsyncStorage.multiRemove(coachMeldKeys);
         }
         
-        console.log('Cleared all local storage data');
+        logger.info('Cleared all local storage data');
       } catch (storageError) {
-        console.error('Error clearing local storage:', storageError);
+        logger.error('Error clearing local storage', storageError);
       }
       
       // Clear local state regardless of error
@@ -231,7 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       return { error };
     } catch (err) {
-      console.error('Sign out error:', err);
+      logger.error('Sign out error', err);
       // Still clear local state on error
       setSession(null);
       setUser(null);

@@ -1,6 +1,9 @@
 import { Platform } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { STRIPE_CONFIG } from '../config/stripe';
+import { createLogger } from '@coachmeld/shared-utils';
+
+const logger = createLogger('StripeService');
 
 // Conditionally import Stripe functions only on native platforms
 let initStripe: any = null;
@@ -22,7 +25,7 @@ class StripeService {
     if (this.initialized || this.isWebPlatform) return;
 
     if (!initStripe) {
-      console.warn('Stripe SDK not available on this platform');
+      logger.warn('Stripe SDK not available on this platform');
       return;
     }
 
@@ -33,9 +36,9 @@ class StripeService {
         urlScheme: STRIPE_CONFIG.urlScheme,
       });
       this.initialized = true;
-      console.log('Stripe initialized successfully');
+      logger.info('Stripe initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize Stripe:', error);
+      logger.error('Failed to initialize Stripe', error);
       throw error;
     }
   }
@@ -76,7 +79,7 @@ class StripeService {
       });
 
       if (response.error) {
-        console.error('Edge function error:', response.error);
+        logger.error('Edge function error', response.error);
         throw response.error;
       }
       
@@ -109,7 +112,7 @@ class StripeService {
       });
 
       if (initError) {
-        console.error('Payment sheet init error:', initError);
+        logger.error('Payment sheet init error', initError);
         return { success: false, error: initError.message };
       }
 
@@ -117,7 +120,7 @@ class StripeService {
       const { error: presentError } = await presentPaymentSheet();
 
       if (presentError) {
-        console.error('Payment sheet error:', presentError);
+        logger.error('Payment sheet error', presentError);
         return { success: false, error: presentError.message };
       }
 
@@ -126,7 +129,7 @@ class StripeService {
 
       return { success: true, subscriptionId };
     } catch (error: any) {
-      console.error('Create subscription error:', error);
+      logger.error('Create subscription error', error);
       return { success: false, error: error.message };
     }
   }
@@ -177,7 +180,7 @@ class StripeService {
       });
 
       if (initError) {
-        console.error('Payment sheet init error:', initError);
+        logger.error('Payment sheet init error', initError);
         return { success: false, error: initError.message };
       }
 
@@ -190,7 +193,7 @@ class StripeService {
 
       return { success: true };
     } catch (error: any) {
-      console.error('Update payment method error:', error);
+      logger.error('Update payment method error', error);
       return { success: false, error: error.message };
     }
   }
@@ -212,7 +215,7 @@ class StripeService {
 
       return { success: true };
     } catch (error: any) {
-      console.error('Cancel subscription error:', error);
+      logger.error('Cancel subscription error', error);
       return { success: false, error: error.message };
     }
   }
@@ -230,14 +233,14 @@ class StripeService {
         .limit(1);
 
       if (error) {
-        console.error('Error fetching subscription:', error);
+        logger.error('Error fetching subscription', error);
         return null;
       }
 
       // Return first subscription or null if none exist
       return data && data.length > 0 ? data[0] : null;
     } catch (error) {
-      console.error('Get subscription status error:', error);
+      logger.error('Get subscription status error', error);
       return null;
     }
   }
@@ -258,7 +261,7 @@ class StripeService {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Update subscription status error:', error);
+      logger.error('Update subscription status error', error);
       throw error;
     }
   }
@@ -294,7 +297,7 @@ class StripeService {
 
       return Math.max(0, 10 - (data?.count || 0));
     } catch (error) {
-      console.error('Get remaining messages error:', error);
+      logger.error('Get remaining messages error', error);
       return 0;
     }
   }
@@ -321,7 +324,7 @@ class StripeService {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Increment message count error:', error);
+      logger.error('Increment message count error', error);
     }
   }
 }

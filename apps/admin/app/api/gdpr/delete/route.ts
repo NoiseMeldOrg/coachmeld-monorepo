@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { DeletionCertificate } from '@/types/gdpr'
+import { createLogger } from '@coachmeld/shared-utils'
+
+const logger = createLogger('GDPR-Delete');
 
 interface ProcessDeletionPayload {
   request_id: string
@@ -297,7 +300,7 @@ export async function POST(request: NextRequest) {
             break
         }
       } catch (error) {
-        console.error(`Error deleting ${dataCategory}:`, error)
+        logger.error(`Error deleting ${dataCategory}`, error)
         deletionResults[dataCategory] = 'error'
       }
     }
@@ -358,7 +361,7 @@ export async function POST(request: NextRequest) {
       deletion_results: deletionResults
     })
   } catch (error: any) {
-    console.error('Unexpected error during deletion:', error)
+    logger.error('Unexpected error during deletion', error)
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }
