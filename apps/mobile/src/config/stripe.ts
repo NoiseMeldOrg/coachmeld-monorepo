@@ -3,6 +3,10 @@
 // For development, use your test mode publishable key
 // For production, use your live mode publishable key
 
+import { createLogger } from '@coachmeld/shared-utils';
+
+const logger = createLogger('StripeConfig');
+
 export const STRIPE_CONFIG = {
   // Replace with your Stripe publishable key
   publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
@@ -34,12 +38,12 @@ export const STRIPE_CONFIG = {
 // Validate configuration
 export const validateStripeConfig = () => {
   if (!STRIPE_CONFIG.publishableKey) {
-    console.error('Stripe publishable key is not configured');
+    logger.error('Stripe publishable key is not configured');
     return false;
   }
   
   if (!STRIPE_CONFIG.plans.monthly.priceId || !STRIPE_CONFIG.plans.annual.priceId) {
-    console.error('Stripe price IDs are not configured');
+    logger.error('Stripe price IDs are not configured');
     return false;
   }
   

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { GeminiChatService } from './geminiChatService';
 import { UserProfile } from '../types';
+import { logger } from '@coachmeld/shared-utils';
 
 export interface Recipe {
   id?: string;
@@ -116,8 +117,8 @@ export class MealPlanService {
       
       const prompt = this.buildSingleMealPrompt(userProfile, activeCoachType, mealType, mealMacros);
       
-      console.log('[MealPlanService] Regenerating meal:', mealType);
-      console.log('[MealPlanService] Prompt length:', prompt.length);
+      logger.info('[MealPlanService] Regenerating meal:', mealType);
+      logger.debug('[MealPlanService] Prompt length:', prompt.length);
       
       const response = await GeminiChatService.generateResponse(
         prompt,
@@ -166,7 +167,7 @@ export class MealPlanService {
    */
   static async getFavoriteRecipes(userId: string, mealType?: string): Promise<Recipe[]> {
     try {
-      console.log('getFavoriteRecipes called with:', { userId, mealType });
+      logger.debug('getFavoriteRecipes called with:', { userId, mealType });
       let query = supabase
         .from('recipes')
         .select('*')
@@ -179,7 +180,7 @@ export class MealPlanService {
       }
       
       const { data, error } = await query;
-      console.log('getFavoriteRecipes query result:', { data: data?.length, error });
+      logger.debug('getFavoriteRecipes query result:', { data: data?.length, error });
       
       if (error) throw error;
       
@@ -553,7 +554,7 @@ Start your response with { and end with }`;
       tags: Array.isArray(recipeData.tags) ? recipeData.tags : [],
     };
     
-    console.log('[MealPlanService] Saving recipe:', recipeToSave.name);
+    logger.info('[MealPlanService] Saving recipe:', recipeToSave.name);
     
     const { data, error } = await supabase
       .from('recipes')

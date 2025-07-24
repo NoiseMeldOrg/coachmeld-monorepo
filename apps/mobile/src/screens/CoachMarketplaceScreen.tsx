@@ -18,6 +18,7 @@ import { CoachCard } from '../components/coaches/CoachCard';
 import { useNavigation } from '@react-navigation/native';
 import { TestPaymentModal } from '../components/TestPaymentModal';
 import { isCoachFreeAccess } from '../utils/coachDisplay';
+import { logger } from '../../../../packages/shared-utils/src/logger';
 
 export const CoachMarketplaceScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -63,7 +64,11 @@ export const CoachMarketplaceScreen: React.FC = () => {
     const coach = coaches.find(c => c.id === coachId);
     if (!coach) return;
 
-    console.log('Coach press - isTestUser:', isTestUser, 'canAccess:', canAccessCoach(coachId));
+    logger.debug('Coach press interaction', { 
+      coachId, 
+      isTestUser, 
+      canAccess: canAccessCoach(coachId) 
+    });
 
     if (canAccessCoach(coachId)) {
       await switchCoach(coachId);
@@ -71,7 +76,7 @@ export const CoachMarketplaceScreen: React.FC = () => {
     } else {
       // For test users, show test payment modal
       if (isTestUser) {
-        console.log('Showing test payment modal for coach:', coach.name);
+        logger.debug('Showing test payment modal', { coachName: coach.name });
         setSelectedCoach(coach);
         setShowTestPayment(true);
       } else {
@@ -142,7 +147,9 @@ export const CoachMarketplaceScreen: React.FC = () => {
                   if (!carnivoreCoach.hasActiveSubscription) {
                     // Show test payment modal
                     if (isTestUser) {
-                      console.log('Showing test payment modal for carnivore pro:', carnivoreCoach.name);
+                      logger.debug('Showing test payment modal for carnivore pro', { 
+                        coachName: carnivoreCoach.name 
+                      });
                       setSelectedCoach(carnivoreCoach);
                       setShowTestPayment(true);
                     } else {

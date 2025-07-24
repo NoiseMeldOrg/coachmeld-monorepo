@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { RealtimeChannel } from '@supabase/supabase-js'
+import { logger } from '../../../../packages/shared-utils/src/logger'
 
 export type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE'
 
@@ -84,13 +85,13 @@ export function createPresenceChannel(
   channel
     .on('presence', { event: 'sync' }, () => {
       const state = channel.presenceState()
-      console.log('Online users:', state)
+      logger.debug('Presence sync - online users', { channelName, userCount: Object.keys(state).length })
     })
     .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-      console.log('User joined:', key, newPresences)
+      logger.debug('User joined presence channel', { channelName, userKey: key, newPresences })
     })
     .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-      console.log('User left:', key, leftPresences)
+      logger.debug('User left presence channel', { channelName, userKey: key, leftPresences })
     })
     .subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {

@@ -42,6 +42,20 @@ If this shows ANY open PRs, you MUST NOT create new branches or PRs. Tell the us
 - **Company**: NoiseMeld
 - **Role**: App Developer/Owner
 
+## Library Documentation & Context7
+
+When working with external libraries or needing up-to-date documentation:
+
+1. **Always use Context7 MCP server** for library documentation lookup
+2. **Before implementing new features** with third-party libraries, check Context7 for latest docs
+3. **Common libraries to check**: React Native components, Expo modules, Supabase features, Stripe SDK, Next.js patterns
+
+### Context7 Usage Pattern:
+- First resolve the library ID: "Help me find docs for [library-name]"
+- Then get specific documentation: "Show me [specific-topic] documentation for [library]"
+
+This ensures we're using the most current documentation and best practices.
+
 ## Monorepo Structure
 
 ### Applications

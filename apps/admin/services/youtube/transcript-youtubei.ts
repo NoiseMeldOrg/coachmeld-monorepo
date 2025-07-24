@@ -1,8 +1,9 @@
 import { Innertube } from 'youtubei.js'
+import { logger } from '../../../../packages/shared-utils/src/logger'
 
 export async function getVideoTranscriptAlternative(videoId: string): Promise<string> {
   try {
-    console.log('Using youtubei.js to fetch transcript for:', videoId)
+    logger.debug('Using youtubei.js to fetch transcript', { videoId })
     
     // Create YouTube client
     const youtube = await Innertube.create()
@@ -31,11 +32,11 @@ export async function getVideoTranscriptAlternative(videoId: string): Promise<st
       .filter((text: string) => text.trim())
       .join(' ')
     
-    console.log('Transcript fetched successfully, length:', fullText.length)
+    logger.info('Transcript fetched successfully with youtubei.js', { videoId, length: fullText.length })
     return fullText
     
   } catch (error: any) {
-    console.error('Error fetching transcript with youtubei.js:', error)
+    logger.error('Error fetching transcript with youtubei.js', { videoId, error })
     if (error.message.includes('No transcript')) {
       throw new Error('Transcript not available for this video')
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { logger } from '@coachmeld/shared-utils'
 
 export async function DELETE(
   request: NextRequest,
@@ -16,7 +17,7 @@ export async function DELETE(
     }
 
     const sourceId = params.id
-    console.log('Hard delete requested for source:', sourceId)
+    logger.warn('Hard delete requested for source:', sourceId)
 
     // Create service client for admin operations
     const serviceClient = await createServiceClient()
@@ -32,7 +33,7 @@ export async function DELETE(
     }
 
     const documentIds = documents?.map(d => d.id) || []
-    console.log(`Found ${documentIds.length} documents to delete`)
+    logger.info(`Found ${documentIds.length} documents to delete`)
 
     // Delete coach access records first (due to foreign key constraints)
     if (documentIds.length > 0) {
@@ -45,7 +46,7 @@ export async function DELETE(
         console.error('Failed to delete coach access records:', accessError)
         throw new Error(`Failed to delete access records: ${accessError.message}`)
       }
-      console.log('Deleted coach access records')
+      logger.info('Deleted coach access records')
     }
 
     // Delete all documents/chunks
@@ -58,7 +59,7 @@ export async function DELETE(
       console.error('Failed to delete documents:', docError)
       throw new Error(`Failed to delete documents: ${docError.message}`)
     }
-    console.log('Deleted documents')
+    logger.info('Deleted documents')
 
     // Finally, delete the source
     const { error: sourceError } = await serviceClient
@@ -70,7 +71,7 @@ export async function DELETE(
       console.error('Failed to delete source:', sourceError)
       throw new Error(`Failed to delete source: ${sourceError.message}`)
     }
-    console.log('Deleted source')
+    logger.info('Deleted source')
 
     return NextResponse.json({
       success: true,

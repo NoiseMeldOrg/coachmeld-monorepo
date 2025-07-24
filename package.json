@@ -21,7 +21,16 @@
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules",
     "type-check": "bun run type-check:mobile && bun run type-check:admin",
     "type-check:mobile": "cd apps/mobile && bun tsc --noEmit",
-    "type-check:admin": "cd apps/admin && bun tsc --noEmit"
+    "type-check:admin": "cd apps/admin && bun tsc --noEmit",
+    "lint": "bun run lint:mobile && bun run lint:admin",
+    "lint:mobile": "cd apps/mobile && bun run lint",
+    "lint:admin": "cd apps/admin && bun run lint",
+    "test": "bun run test:mobile && bun run test:admin",
+    "test:mobile": "cd apps/mobile && bun run test",
+    "test:admin": "cd apps/admin && bun run test",
+    "test:watch": "echo 'Run test:watch:mobile or test:watch:admin to watch specific app tests'",
+    "test:watch:mobile": "cd apps/mobile && bun run test:watch",
+    "test:watch:admin": "cd apps/admin && bun run test:watch"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

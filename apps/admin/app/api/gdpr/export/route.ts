@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createLogger } from '@coachmeld/shared-utils'
+
+const logger = createLogger('GDPR-Export');
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,7 +41,7 @@ export async function GET(request: NextRequest) {
     const { data: requests, error } = await query
 
     if (error) {
-      console.error('Error fetching deletion requests:', error)
+      logger.error('Error fetching deletion requests', error)
       return NextResponse.json({ error: 'Failed to fetch deletion requests' }, { status: 500 })
     }
 
@@ -122,7 +125,7 @@ export async function GET(request: NextRequest) {
     // Return JSON if format is not CSV
     return NextResponse.json({ requests })
   } catch (error: any) {
-    console.error('Unexpected error:', error)
+    logger.error('Unexpected error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

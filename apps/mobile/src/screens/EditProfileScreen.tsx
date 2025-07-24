@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { logger } from '../../../../packages/shared-utils/src/logger';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/SubscriptionContext';
 import { useNavigation } from '@react-navigation/native';
@@ -133,7 +134,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ isFromTab 
   ];
 
   const handleFieldPress = (field: EditableField) => {
-    console.log('Field pressed:', field);
+    logger.debug('Profile field pressed', { field });
     if (fieldsAffectingCalculations.includes(field)) {
       setPendingField(field);
       setShowConfirmation(true);
@@ -143,7 +144,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ isFromTab 
   };
 
   const openFieldEditor = (field: EditableField) => {
-    console.log('Opening field editor for:', field);
+    logger.debug('Opening field editor', { field });
     setEditingField(field);
     
     switch (field) {
@@ -170,7 +171,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ isFromTab 
       case 'healthConditions':
       case 'dietaryPreferences':
         // Navigate to specific edit screens
-        console.log('Navigating to EditProfileField with:', { field, currentProfile: profile });
+        logger.debug('Navigating to EditProfileField', { field, hasProfile: !!profile });
         navigation.navigate('EditProfileField', { field, currentProfile: profile });
         break;
     }

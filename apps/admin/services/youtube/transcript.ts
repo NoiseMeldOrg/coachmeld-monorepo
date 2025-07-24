@@ -1,5 +1,6 @@
 import { YoutubeTranscript } from 'youtube-transcript'
 import { Innertube } from 'youtubei.js'
+import { logger } from '../../../../packages/shared-utils/src/logger'
 
 export interface VideoTranscript {
   videoId: string
@@ -11,7 +12,7 @@ export interface VideoTranscript {
 
 export async function getPlaylistVideos(playlistId: string): Promise<string[]> {
   try {
-    console.log('Fetching playlist videos for:', playlistId)
+    logger.info('Fetching playlist videos', { playlistId })
     
     const youtube = await Innertube.create()
     const playlist = await youtube.getPlaylist(playlistId)
@@ -25,40 +26,40 @@ export async function getPlaylistVideos(playlistId: string): Promise<string[]> {
       .filter((item: any) => item.id) // Filter out any items without IDs
       .map((item: any) => item.id)
     
-    console.log(`Found ${videoIds.length} videos in playlist`)
+    logger.info('Found videos in playlist', { playlistId, videoCount: videoIds.length })
     return videoIds
     
   } catch (error: any) {
-    console.error('Error fetching playlist:', error.message)
+    logger.error('Error fetching playlist', { playlistId, error: error.message })
     throw new Error(`Failed to fetch playlist: ${error.message}`)
   }
 }
 
 export async function getVideoTranscript(videoId: string): Promise<string> {
   try {
-    console.log('Fetching transcript from YouTube for video:', videoId)
+    logger.info('Fetching YouTube transcript', { videoId })
     
     // First try the youtube-transcript library (faster but less reliable)
     try {
       const transcript = await YoutubeTranscript.fetchTranscript(videoId)
       
       if (transcript && transcript.length > 0) {
-        console.log('Got transcript from youtube-transcript, segments:', transcript.length)
+        logger.info('Got transcript from youtube-transcript', { videoId, segmentCount: transcript.length })
         const fullTranscript = transcript
           .map(segment => segment.text)
           .join(' ')
         
         if (fullTranscript.trim()) {
-          console.log('Transcript length:', fullTranscript.length)
+          logger.info('Transcript retrieved successfully', { videoId, length: fullTranscript.length })
           return fullTranscript
         }
       }
     } catch (e) {
-      console.log('youtube-transcript failed, trying youtubei.js...')
+      logger.debug('youtube-transcript failed, trying youtubei.js', { videoId })
     }
     
     // Fallback to youtubei.js (more reliable but slower)
-    console.log('Using youtubei.js to fetch transcript')
+    logger.debug('Using youtubei.js to fetch transcript', { videoId })
     const youtube = await Innertube.create()
     const info = await youtube.getInfo(videoId)
     
@@ -83,8 +84,11 @@ export async function getVideoTranscript(videoId: string): Promise<string> {
       .filter((text: string) => text.trim())
       .join(' ')
     
-    console.log('Transcript fetched successfully with youtubei.js, length:', fullText.length)
-    console.log('First 200 chars:', fullText.substring(0, 200))
+    logger.info('Transcript fetched with youtubei.js', { 
+      videoId, 
+      length: fullText.length, 
+      preview: fullText.substring(0, 200) 
+    })
     
     if (!fullText.trim()) {
       throw new Error('Transcript contains no text')
@@ -92,7 +96,7 @@ export async function getVideoTranscript(videoId: string): Promise<string> {
     
     return fullText
   } catch (error: any) {
-    console.error('Error in getVideoTranscript:', error.message)
+    logger.error('Error in getVideoTranscript', { videoId, error: error.message })
     // Handle specific error cases
     if (error.message.includes('not available') || 
         error.message.includes('Transcript is disabled') || 
@@ -119,7 +123,7 @@ export async function processPlaylist(
   // This function now only fetches metadata, not transcripts
   // Transcripts should be fetched individually after duplicate checks
   try {
-    console.log('Fetching playlist metadata:', playlistId)
+    logger.info('Fetching playlist metadata', { playlistId })
     
     const youtube = await Innertube.create()
     const playlist = await youtube.getPlaylist(playlistId)
@@ -162,11 +166,11 @@ export async function processPlaylist(
       })
     }
     
-    console.log(`Found ${results.length} videos in playlist`)
+    logger.info('Found videos in playlist metadata', { playlistId, videoCount: results.length })
     return results
     
   } catch (error: any) {
-    console.error('Error fetching playlist metadata:', error)
+    logger.error('Error fetching playlist metadata', { playlistId, error })
     throw error
   }
 }
@@ -177,7 +181,7 @@ export async function processPlaylistWithTranscripts(
   onProgress?: (videoId: string, status: 'processing' | 'success' | 'failed', error?: string) => void
 ): Promise<VideoTranscript[]> {
   try {
-    console.log('Processing playlist with transcripts:', playlistId)
+    logger.info('Processing playlist with transcripts', { playlistId })
     
     const youtube = await Innertube.create()
     const playlist = await youtube.getPlaylist(playlistId)
@@ -226,7 +230,7 @@ export async function processPlaylistWithTranscripts(
         
         onProgress?.(videoId, 'success')
       } catch (error: any) {
-        console.error(`Failed to process video ${videoId}:`, error.message)
+        logger.error('Failed to process video transcript', { videoId, error: error.message })
         
         results.push({
           videoId,
@@ -240,11 +244,11 @@ export async function processPlaylistWithTranscripts(
       }
     }
     
-    console.log(`Processed ${results.length} videos from playlist`)
+    logger.info('Processed playlist with transcripts complete', { playlistId, processedCount: results.length })
     return results
     
   } catch (error: any) {
-    console.error('Error processing playlist:', error)
+    logger.error('Error processing playlist', { playlistId, error })
     throw error
   }
 }
