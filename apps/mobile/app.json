@@ -33,7 +33,8 @@
       "backgroundColor": "#ffffff",
       "display": "standalone",
       "orientation": "portrait",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single"
     },
     "extra": {
       "eas": {
