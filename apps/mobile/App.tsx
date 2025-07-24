@@ -1,5 +1,5 @@
 import 'react-native-url-polyfill/auto';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { Platform } from 'react-native';
@@ -55,7 +55,7 @@ function AppContent() {
     }
   }, [isDark]);
   
-  useEffect(() => {
+  React.useEffect(() => {
     setNavigationBarStyle();
   }, [setNavigationBarStyle]);
   
