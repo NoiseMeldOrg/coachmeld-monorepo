@@ -8,6 +8,7 @@ export type RootStackParamList = {
   PaymentSuccess: undefined;
   EditProfile: undefined;
   EditProfileField: { field: string; currentProfile: any };
+  PrivacyPolicy: undefined;
 };
 
 export type MainTabParamList = {

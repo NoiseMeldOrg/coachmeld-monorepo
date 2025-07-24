@@ -10,7 +10,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, privacyAccepted?: boolean) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
 }
@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, privacyAccepted: boolean = false) => {
     try {
       console.log('Starting signup for:', email);
       console.log('Supabase client:', supabase ? 'Initialized' : 'Not initialized');
@@ -147,6 +147,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('Test user enrollment result:', enrollResult);
           } catch (enrollError) {
             console.error('Error during test user enrollment:', enrollError);
+          }
+        }
+        
+        // Track privacy policy acceptance if provided
+        if (privacyAccepted) {
+          console.log('Recording privacy policy acceptance for user:', data.user.id);
+          
+          try {
+            const { error: disclaimerError } = await supabase
+              .from('disclaimer_acceptances')
+              .insert({
+                user_id: data.user.id,
+                disclaimer_type: 'privacy_policy',
+                accepted_at: new Date().toISOString(),
+                user_agent: Platform.OS === 'ios' ? 'iOS App' : 'Android App',
+                version: '1.0' // Privacy policy version
+              });
+            
+            if (disclaimerError) {
+              console.error('Error recording privacy policy acceptance:', disclaimerError);
+            } else {
+              console.log('Privacy policy acceptance recorded successfully');
+            }
+            
+            // Also update the GDPR consent fields in the profile
+            const { error: profileUpdateError } = await supabase
+              .from('profiles')
+              .update({
+                gdpr_consent_date: new Date().toISOString(),
+                data_processing_consent: true
+              })
+              .eq('id', data.user.id);
+            
+            if (profileUpdateError) {
+              console.error('Error updating GDPR consent in profile:', profileUpdateError);
+            } else {
+              console.log('GDPR consent updated in profile successfully');
+            }
+          } catch (trackingError) {
+            console.error('Error tracking privacy policy acceptance:', trackingError);
           }
         }
       }
