@@ -2,6 +2,14 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno'
 
+// Simple logger for Edge Functions (Deno environment)
+const logger = {
+  info: (...args: any[]) => console.log('[INFO]', ...args),
+  warn: (...args: any[]) => console.warn('[WARN]', ...args),
+  error: (...args: any[]) => console.error('[ERROR]', ...args),
+  debug: (...args: any[]) => console.log('[DEBUG]', ...args),
+}
+
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient(),
@@ -25,7 +33,7 @@ serve(async (req) => {
     const event = stripe.webhooks.constructEvent(body, signature, endpointSecret)
 
     // Log the event
-    console.log(`Processing webhook event: ${event.type}`)
+    logger.info(`Processing webhook event: ${event.type}`)
 
     // Handle different event types
     switch (event.type) {
@@ -35,7 +43,7 @@ serve(async (req) => {
         const userId = subscription.metadata.supabase_user_id
 
         if (!userId) {
-          console.error('No user ID in subscription metadata')
+          logger.error('No user ID in subscription metadata')
           break
         }
 
@@ -72,7 +80,7 @@ serve(async (req) => {
         const userId = subscription.metadata.supabase_user_id
 
         if (!userId) {
-          console.error('No user ID in subscription metadata')
+          logger.error('No user ID in subscription metadata')
           break
         }
 
@@ -105,7 +113,7 @@ serve(async (req) => {
         const userId = subscription.metadata.supabase_user_id
 
         if (!userId) {
-          console.error('No user ID in subscription metadata')
+          logger.error('No user ID in subscription metadata')
           break
         }
 
@@ -135,7 +143,7 @@ serve(async (req) => {
         const userId = subscription.metadata.supabase_user_id
 
         if (!userId) {
-          console.error('No user ID in subscription metadata')
+          logger.error('No user ID in subscription metadata')
           break
         }
 
@@ -166,7 +174,7 @@ serve(async (req) => {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        logger.warn(`Unhandled event type: ${event.type}`)
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -174,7 +182,7 @@ serve(async (req) => {
       status: 200,
     })
   } catch (error) {
-    console.error('Webhook error:', error.message)
+    logger.error('Webhook error:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

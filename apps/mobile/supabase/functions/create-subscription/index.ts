@@ -2,8 +2,16 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno'
 
+// Simple logger for Edge Functions (Deno environment)
+const logger = {
+  info: (...args: any[]) => console.log('[INFO]', ...args),
+  warn: (...args: any[]) => console.warn('[WARN]', ...args),
+  error: (...args: any[]) => console.error('[ERROR]', ...args),
+  debug: (...args: any[]) => console.log('[DEBUG]', ...args),
+}
+
 const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
-console.log('Stripe secret key configured:', stripeSecretKey ? 'Yes' : 'No');
+logger.info('Stripe secret key configured:', stripeSecretKey ? 'Yes' : 'No');
 
 const stripe = new Stripe(stripeSecretKey || '', {
   apiVersion: '2023-10-16',
@@ -43,7 +51,7 @@ serve(async (req) => {
 
     // Parse request body
     const { priceId } = await req.json()
-    console.log('Received priceId:', priceId);
+    logger.info('Received priceId:', priceId);
     
     if (!priceId) {
       throw new Error('Price ID is required')
@@ -53,7 +61,7 @@ serve(async (req) => {
     let customerId: string
 
     // Check if user already has a Stripe customer ID
-    console.log('Fetching profile for user:', user.id);
+    logger.info('Fetching profile for user:', user.id);
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('stripe_customer_id')
@@ -61,16 +69,16 @@ serve(async (req) => {
       .single()
 
     if (profileError) {
-      console.log('Profile fetch error:', profileError);
+      logger.warn('Profile fetch error:', profileError);
       // If profile doesn't exist, that's ok - we'll create a stripe customer
     }
 
     if (profile?.stripe_customer_id) {
       customerId = profile.stripe_customer_id
-      console.log('Found existing Stripe customer:', customerId);
+      logger.info('Found existing Stripe customer:', customerId);
     } else {
       // Create new Stripe customer
-      console.log('Creating new Stripe customer for:', user.email);
+      logger.info('Creating new Stripe customer for:', user.email);
       const customer = await stripe.customers.create({
         email: user.email,
         metadata: {
@@ -78,7 +86,7 @@ serve(async (req) => {
         },
       })
       customerId = customer.id
-      console.log('Created Stripe customer:', customerId);
+      logger.info('Created Stripe customer:', customerId);
 
       // Save customer ID to profile
       const { error: updateError } = await supabaseClient
@@ -87,7 +95,7 @@ serve(async (req) => {
         .eq('id', user.id)
       
       if (updateError) {
-        console.error('Failed to update profile with stripe_customer_id:', updateError);
+        logger.error('Failed to update profile with stripe_customer_id:', updateError);
       }
     }
 
@@ -138,11 +146,11 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Create subscription error:', error);
+    logger.error('Create subscription error:', error);
     
     // Check if it's a Stripe error
     if (error.type === 'StripeError') {
-      console.error('Stripe error details:', {
+      logger.error('Stripe error details:', {
         type: error.type,
         code: error.code,
         message: error.message,
