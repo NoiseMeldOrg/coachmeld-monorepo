@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getPlaylistVideos } from '@/services/youtube/transcript'
+import { logger } from '@coachmeld/shared-utils'
 import { Innertube } from 'youtubei.js'
 
 export async function GET(request: NextRequest) {
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      console.log('Fetching playlist info for:', playlistId)
+      logger.info('Fetching playlist info for:', playlistId)
       
       const youtube = await Innertube.create()
       const playlist = await youtube.getPlaylist(playlistId)
