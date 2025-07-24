@@ -2,46 +2,30 @@ const createExpoWebpackConfigAsync = require('@expo/webpack-config');
 const webpack = require('webpack');
 
 module.exports = async function (env, argv) {
-  const config = await createExpoWebpackConfigAsync(
-    {
-      ...env,
-      babel: {
-        dangerouslyAllowSyncDefaultImport: true,
-      },
-    },
-    argv
-  );
-
-  // Ensure React is available globally and resolve to single instance
+  const config = await createExpoWebpackConfigAsync(env, argv);
+  
+  // Ensure React is available globally for web builds
   config.resolve.alias = {
     ...config.resolve.alias,
-    'react-native$': 'react-native-web',
     'react': require.resolve('react'),
     'react-dom': require.resolve('react-dom'),
+    'react-native': 'react-native-web',
   };
 
-  // Ensure only one copy of React
-  config.resolve.dedupe = ['react', 'react-dom'];
+  // Ensure proper module resolution for web
+  config.resolve.extensions = [
+    '.web.js',
+    '.web.jsx', 
+    '.web.ts',
+    '.web.tsx',
+    ...config.resolve.extensions,
+  ];
 
-  // Add fallbacks for Node.js modules
-  config.resolve.fallback = {
-    ...config.resolve.fallback,
-    crypto: false,
-    buffer: false,
-    util: false,
-    stream: false,
-    assert: false,
-  };
-
-  // Provide React globally to prevent hook import issues
+  // Add ProvidePlugin to make React globally available
   config.plugins = [
     ...config.plugins,
     new webpack.ProvidePlugin({
       React: 'react',
-    }),
-    new webpack.DefinePlugin({
-      __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
   ];
 

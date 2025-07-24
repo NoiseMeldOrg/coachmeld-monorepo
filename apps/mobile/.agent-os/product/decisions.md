@@ -322,3 +322,69 @@ Complete GDPR compliance protects the business from significant legal and financ
 - Need for legal review of privacy policies and terms
 - Coordination complexity between mobile and admin app implementations
 - User experience complexity with consent flows and privacy settings
+
+## 2025-07-24: Next.js Web Application Strategy
+
+**ID:** DEC-008
+**Status:** Planned
+**Category:** Technical/Product
+**Stakeholders:** Product Owner, Tech Lead
+
+### Decision
+
+Build a separate Next.js web application for CoachMeld instead of fixing React Native Web compatibility issues, prioritizing web-optimized performance and user experience.
+
+### Context
+
+After extensive debugging of React Native Web deployment issues (React hooks dispatcher conflicts, bundle size concerns), it became clear that mobile and web users have different needs and expectations. The mobile app (v0.8.0) is mature and optimized for mobile coaching experiences, while web users need marketing-focused content and desktop-optimized interfaces.
+
+### Alternatives Considered
+
+1. **Fix React Native Web Issues**
+   - Pros: Single codebase, shared components and logic, faster feature development
+   - Cons: Web performance limitations, mobile-first design not optimal for desktop, ongoing compatibility issues, limited web-specific features (SEO, SSR)
+
+2. **Simple Landing Page**
+   - Pros: Quick to implement, minimal maintenance
+   - Cons: Missed business opportunities, no web coaching functionality, limited user engagement
+
+3. **Separate Next.js Web App** (Selected)
+   - Pros: Web-optimized performance, better SEO for discovery, desktop-friendly UI, web-native features, professional web experience, marketing potential
+   - Cons: Maintain two codebases, more development time for new features, need to sync data models
+
+### Rationale
+
+The mobile app is mature and doesn't require frequent UI changes. Different user intentions exist: mobile users want full coaching experience, web users often want to learn about the product first. A Next.js web app enables SEO, marketing, and enterprise sales while leveraging existing Supabase backend and Stripe web integration.
+
+### Implementation Plan
+
+**Shared Infrastructure:**
+- Supabase database (already exists)
+- TypeScript types (already exists)
+- Stripe web checkout (already implemented in services)
+- Authentication and user management APIs
+
+**New Web App Features:**
+- Professional landing page with SEO optimization
+- Basic coaching chat interface (1-2 coaches initially)
+- Web-optimized subscription flow with Stripe Checkout
+- Responsive design for desktop/tablet users
+- Marketing pages (about, pricing, contact)
+
+**Timeline:** 1-2 weeks when prioritized
+
+### Consequences
+
+**Positive:**
+- Significantly faster web development vs debugging React Native Web
+- Professional web presence for marketing and SEO
+- Web-optimized user experience with proper desktop UI patterns
+- Foundation for enterprise sales and broader market reach
+- Clear separation of mobile and web concerns
+- Leverages existing backend infrastructure
+
+**Negative:**
+- Two codebases to maintain (mobile React Native + web Next.js)
+- Feature development requires implementation in both apps
+- Need to keep data models and APIs synchronized
+- Additional deployment and monitoring overhead

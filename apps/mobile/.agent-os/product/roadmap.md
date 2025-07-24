@@ -198,7 +198,48 @@ The mobile app will integrate with the admin app for complete GDPR compliance:
 - Video hosting solution
 - Expanded AI training
 
-## Phase 5: Enterprise Features (v2.0.0 - Q3 2026)
+## Phase 5: Next.js Web Application (Future - 1-2 weeks when prioritized)
+
+**Goal:** Create professional web presence with coaching functionality
+**Success Criteria:** Deployed Next.js web app with basic coaching and marketing features
+
+### Must-Have Features
+
+- [ ] **Professional Landing Page** - SEO-optimized marketing site with CoachMeld branding `M`
+- [ ] **Web Authentication** - Login/signup flow integrated with existing Supabase auth `M`
+- [ ] **Basic Coaching Chat** - Web-optimized chat interface with 1-2 coaches initially `L`
+- [ ] **Stripe Checkout Integration** - Web subscription flow using existing edge functions `M`
+- [ ] **Responsive Design** - Desktop and tablet optimized layouts `M`
+
+### Should-Have Features
+
+- [ ] **Marketing Pages** - About, pricing, contact, and FAQ pages `M`
+- [ ] **Blog/Content System** - SEO content for health coaching topics `L`
+- [ ] **User Dashboard** - Basic profile and subscription management `M`
+- [ ] **Progressive Web App** - PWA features for mobile web users `S`
+
+### Technical Implementation
+
+**Shared Infrastructure:**
+- Supabase database (already exists) ✅
+- TypeScript types (already exists) ✅  
+- Stripe web checkout (already implemented) ✅
+- Authentication APIs (already exists) ✅
+
+**New Components:**
+- Next.js 14 with App Router
+- Tailwind CSS for styling
+- shadcn/ui component library
+- Deployment on Vercel or similar platform
+
+### Dependencies
+
+- Next.js web app decision approved (DEC-008) ✅
+- Existing Supabase backend ✅
+- Shared TypeScript types from mobile app ✅
+- Design system and branding guidelines
+
+## Phase 6: Enterprise Features (v2.0.0 - Q3 2026)
 
 **Goal:** B2B offerings and platform expansion
 **Success Criteria:** First enterprise customer onboarded
