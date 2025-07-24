@@ -2,7 +2,7 @@
   "name": "@coachmeld/mobile",
   "version": "0.8.0",
   "private": true,
-  "main": "index.ts",
+  "main": "index.web.js",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -21,8 +21,8 @@
     "test": "echo 'No tests configured yet'"
   },
   "dependencies": {
-    "@coachmeld/shared-types": "workspace:*",
     "@coachmeld/shared-config": "workspace:*",
+    "@coachmeld/shared-types": "workspace:*",
     "@coachmeld/shared-utils": "workspace:*",
     "@expo/metro-runtime": "~5.0.4",
     "@expo/ngrok": "^4.1.3",
