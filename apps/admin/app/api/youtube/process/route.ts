@@ -7,6 +7,7 @@ import { chunkText } from '@/services/rag/chunking'
 import { normalizeYouTubeUrl } from '@/lib/url-utils'
 import { createCoachDocumentAccess } from '@/lib/coach-document-access'
 import { CoachId, AccessTier } from '@/lib/coach-mapping'
+import { logger } from '@coachmeld/shared-utils'
 import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    console.log('Request body:', JSON.stringify(body, null, 2))
+    logger.debug('Request body:', JSON.stringify(body, null, 2))
     const { playlistId, videoId, url, videos: frontendVideos, coachAccess } = body
     
     // Validate coach access configuration
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
       const match = url.match(/[?&]list=([^&]+)/)
       if (match) {
         actualPlaylistId = match[1]
-        console.log('Extracted playlist ID from URL:', actualPlaylistId)
+        logger.info('Extracted playlist ID from URL:', actualPlaylistId)
       }
     }
 
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
       const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
       if (match) {
         actualVideoId = match[1]
-        console.log('Extracted video ID from URL:', actualVideoId)
+        logger.info('Extracted video ID from URL:', actualVideoId)
       }
     }
 
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
     
     if (actualVideoId) {
       // Process single video
-      console.log('Processing single video:', actualVideoId)
+      logger.info('Processing single video:', actualVideoId)
       // First check for duplicates
       const videoUrl = `https://youtube.com/watch?v=${actualVideoId}`
       const normalizedUrl = normalizeYouTubeUrl(videoUrl)
@@ -93,9 +94,9 @@ export async function POST(request: NextRequest) {
       }
       
       try {
-        console.log('Fetching transcript for video:', actualVideoId)
+        logger.info('Fetching transcript for video:', actualVideoId)
         const transcript = await getVideoTranscript(actualVideoId)
-        console.log('Transcript length:', transcript.length)
+        logger.info('Transcript length:', transcript.length)
         videosToProcess = [{
           videoId: actualVideoId,
           title: `YouTube Video ${actualVideoId}`,
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Process playlist - first get metadata only
-      console.log('Processing playlist with ID:', actualPlaylistId)
+      logger.info('Processing playlist with ID:', actualPlaylistId)
       const playlistVideos = await processPlaylist(actualPlaylistId)
       console.log(`Found ${playlistVideos.length} videos in playlist`)
       
@@ -193,7 +194,7 @@ export async function POST(request: NextRequest) {
 
     const results = []
     
-    console.log(`Processing ${videosToProcess.length} videos`)
+    logger.info(`Processing ${videosToProcess.length} videos`)
 
     // Send progress updates via Server-Sent Events or WebSocket if needed
     // For now, we'll process all videos and return results
@@ -270,7 +271,7 @@ export async function POST(request: NextRequest) {
           throw new Error(sourceError.message)
         }
         
-        console.log('Document source created:', documentSource.id, documentSource.title)
+        logger.info('Document source created:', documentSource.id, documentSource.title)
 
         // Chunk the transcript
         const chunks = chunkText(video.transcript)
@@ -279,7 +280,7 @@ export async function POST(request: NextRequest) {
         // Generate embeddings and store chunks
         const chunkPromises = chunks.map(async (chunk, i) => {
           try {
-            console.log(`Generating embedding for chunk ${i + 1}/${chunks.length}`)
+            logger.debug(`Generating embedding for chunk ${i + 1}/${chunks.length}`)
             const embedding = await generateEmbedding(chunk)
             
             return {
@@ -340,7 +341,7 @@ export async function POST(request: NextRequest) {
             }
           }
           
-          console.log(`Created coach access for ${chunkIds.length} chunks with ${coachAccess.length} coaches`)
+          logger.info(`Created coach access for ${chunkIds.length} chunks with ${coachAccess.length} coaches`)
         }
 
         results.push({

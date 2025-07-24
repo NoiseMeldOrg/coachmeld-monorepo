@@ -5,6 +5,7 @@ import { generateEmbedding } from '@/services/embeddings/gemini'
 import { chunkText, extractMetadata } from '@/services/rag/chunking'
 import { createCoachDocumentAccess } from '@/lib/coach-document-access'
 import { CoachId, AccessTier } from '@/lib/coach-mapping'
+import { logger } from '@coachmeld/shared-utils'
 import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest) {
           }
         }
         
-        console.log(`Created coach access for ${docIds.length} chunks with ${coachAccess.length} coaches`)
+        logger.info(`Created coach access for ${docIds.length} chunks with ${coachAccess.length} coaches`)
       }
     }
 
