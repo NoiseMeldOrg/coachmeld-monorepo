@@ -12,10 +12,12 @@ module.exports = async function (env, argv) {
     argv
   );
 
-  // Ensure React is available globally
+  // Ensure React is available globally and resolve to single instance
   config.resolve.alias = {
     ...config.resolve.alias,
     'react-native$': 'react-native-web',
+    'react': require.resolve('react'),
+    'react-dom': require.resolve('react-dom'),
   };
 
   // Add fallbacks for Node.js modules

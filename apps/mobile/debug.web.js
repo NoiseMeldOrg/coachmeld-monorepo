@@ -1,22 +1,38 @@
 // Simple debug entry point to test React initialization
-import React from 'react';
+import * as React from 'react';
 import { AppRegistry } from 'react-native';
 import { View, Text } from 'react-native';
 
 // Ensure React is available globally BEFORE any components load
 window.React = React;
+globalThis.React = React;
+
+// Also expose React as a module global
+if (typeof global !== 'undefined') {
+  global.React = React;
+}
+
+// Force React to use our instance
+window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = window.__REACT_DEVTOOLS_GLOBAL_HOOK__ || {};
+
 console.log('React available:', !!React);
 console.log('React.useState available:', !!React.useState);
 console.log('React.useEffect available:', !!React.useEffect);
+console.log('React default export:', !!React.default);
+console.log('React keys:', Object.keys(React));
 
 // Simple test component without any complex imports
 function SimpleApp() {
   console.log('SimpleApp rendering...');
   
   try {
-    const [count, setCount] = React.useState(0);
+    // Use the default export if available
+    const ReactToUse = React.default || React;
+    console.log('Using React:', ReactToUse === React ? 'namespace' : 'default');
     
-    React.useEffect(() => {
+    const [count, setCount] = ReactToUse.useState(0);
+    
+    ReactToUse.useEffect(() => {
       console.log('useEffect working!');
     }, []);
     
