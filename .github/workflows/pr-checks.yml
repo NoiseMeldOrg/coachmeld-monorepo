@@ -83,6 +83,15 @@ jobs:
         cd ../..
         bun add -D @types/minimatch @types/node @types/react @types/react-native
     
+    - name: ESLint check (non-blocking)
+      run: |
+        echo "🔍 Running ESLint check for mobile app..."
+        npx eslint src/ --ext .ts,.tsx --max-warnings 10 || {
+          echo "⚠️ ESLint found issues, but continuing build..."
+          echo "Note: Please fix linting issues in development"
+          exit 0
+        }
+    
     - name: TypeScript check (relaxed for CI)
       run: |
         echo "🔍 Running relaxed TypeScript check for mobile app..."
@@ -109,6 +118,15 @@ jobs:
         npx tsc --noEmit -p tsconfig.ci.json || {
           echo "⚠️ TypeScript check failed, but continuing build..."
           echo "Note: TypeScript errors should be fixed in development, but CI will proceed"
+          exit 0
+        }
+    
+    - name: Jest tests (non-blocking)
+      run: |
+        echo "🧪 Running Jest tests for mobile app..."
+        npm test -- --watchAll=false --coverage=false --passWithNoTests || {
+          echo "⚠️ Some tests failed, but continuing build..."
+          echo "Note: Please fix failing tests in development"
           exit 0
         }
     
@@ -174,6 +192,15 @@ jobs:
     - name: Install dependencies (if cache miss)
       run: cd ../.. && bun install
     
+    - name: ESLint check (non-blocking)
+      run: |
+        echo "🔍 Running ESLint check for admin app..."
+        npx next lint --max-warnings 10 || {
+          echo "⚠️ ESLint found issues, but continuing build..."
+          echo "Note: Please fix linting issues in development"
+          exit 0
+        }
+    
     - name: TypeScript check (relaxed for CI)
       run: |
         echo "🔍 Running relaxed TypeScript check for admin app..."
@@ -192,6 +219,15 @@ jobs:
         EOF
         npx tsc --noEmit -p tsconfig.ci.json || {
           echo "⚠️ TypeScript check failed, but continuing build..."
+          exit 0
+        }
+    
+    - name: Jest tests (non-blocking)
+      run: |
+        echo "🧪 Running Jest tests for admin app..."
+        npm test -- --watchAll=false --coverage=false --passWithNoTests || {
+          echo "⚠️ Some tests failed, but continuing build..."
+          echo "Note: Please fix failing tests in development"
           exit 0
         }
     

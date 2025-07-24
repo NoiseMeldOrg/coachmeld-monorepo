@@ -18,7 +18,9 @@
     "populate-knowledge": "tsx scripts/populateKnowledge.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/ --ext .ts,.tsx --max-warnings 10",
-    "test": "echo 'No tests configured yet'"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@coachmeld/shared-config": "workspace:*",
@@ -59,9 +61,14 @@
     "@babel/core": "^7.25.2",
     "@expo/cli": "^0.21.7",
     "@expo/webpack-config": "^19.0.1",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^12.6.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.0.10",
     "eas-cli": "^16.11.0",
     "eslint-plugin-react-native": "^5.0.0",
+    "jest": "^30.0.3",
+    "jest-expo": "^52.0.3",
     "supabase": "^2.26.9",
     "typescript": "~5.8.3",
     "webpack": "^5.94.0"
