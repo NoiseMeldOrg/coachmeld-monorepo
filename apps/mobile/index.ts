@@ -1,9 +1,15 @@
 // Import React and make it globally available for web builds
-import React from 'react';
+import * as React from 'react';
 
-// Ensure React is globally available for web platform
+// Ensure React is globally available for web platform - multiple strategies
 if (typeof window !== 'undefined') {
   (window as any).React = React;
+  (globalThis as any).React = React;
+}
+
+// Also ensure it's available in global scope for Node.js-like environments
+if (typeof global !== 'undefined') {
+  (global as any).React = React;
 }
 
 import { registerRootComponent } from 'expo';
