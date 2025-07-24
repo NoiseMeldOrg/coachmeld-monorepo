@@ -1,3 +1,5 @@
+// Import React before anything else to ensure it's available globally
+import React from 'react';
 import { registerRootComponent } from 'expo';
 
 // Import web polyfills for React Native modules
