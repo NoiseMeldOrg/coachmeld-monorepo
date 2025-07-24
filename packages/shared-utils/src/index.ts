@@ -1,5 +1,9 @@
 import { UserProfile } from '@coachmeld/shared-types';
 
+// Export logger utilities
+export * from './logger';
+export { default as logger } from './logger';
+
 // Date formatting utilities
 export const formatDate = (date: Date | string): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
