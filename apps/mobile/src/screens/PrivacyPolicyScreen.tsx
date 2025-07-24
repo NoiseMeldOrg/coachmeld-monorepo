@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types/navigation';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PrivacyPolicy'>;
 
@@ -18,11 +18,11 @@ export function PrivacyPolicyScreen({ navigation }: Props) {
   const { theme } = useTheme();
 
   const handleEmailPress = () => {
-    Linking.openURL('mailto:privacy@coachmeld.com');
+    Linking.openURL('mailto:privacy@noisemeld.com');
   };
 
   const handleWebsitePress = () => {
-    Linking.openURL('https://coachmeld.com');
+    Linking.openURL('https://noisemeld.com/privacy');
   };
 
   return (
@@ -127,7 +127,7 @@ export function PrivacyPolicyScreen({ navigation }: Props) {
         <Text style={[styles.paragraph, { color: theme.text }]}>
           To exercise these rights, please contact us at{' '}
           <Text style={[styles.link, { color: theme.primary }]} onPress={handleEmailPress}>
-            privacy@coachmeld.com
+            privacy@noisemeld.com
           </Text>
         </Text>
 
@@ -169,12 +169,12 @@ export function PrivacyPolicyScreen({ navigation }: Props) {
           CoachMeld{'\n'}
           Email:{' '}
           <Text style={[styles.link, { color: theme.primary }]} onPress={handleEmailPress}>
-            privacy@coachmeld.com
+            privacy@noisemeld.com
           </Text>
           {'\n'}
           Website:{' '}
           <Text style={[styles.link, { color: theme.primary }]} onPress={handleWebsitePress}>
-            https://coachmeld.com
+            https://noisemeld.com/privacy
           </Text>
         </Text>
 
@@ -184,7 +184,7 @@ export function PrivacyPolicyScreen({ navigation }: Props) {
         <Text style={[styles.paragraph, { color: theme.text }]}>
           For GDPR-related inquiries, you can contact our Data Protection Officer at{' '}
           <Text style={[styles.link, { color: theme.primary }]} onPress={handleEmailPress}>
-            privacy@coachmeld.com
+            privacy@noisemeld.com
           </Text>
         </Text>
 

@@ -235,6 +235,27 @@ function AppContent() {
               component={EmailConfirmationScreen}
               options={{ headerShown: false }}
             />
+            <Stack.Screen 
+              name="PrivacyPolicy" 
+              component={PrivacyPolicyScreen} 
+              options={{
+                headerShown: true,
+                headerTitle: 'Privacy Policy',
+                headerBackTitle: 'Back',
+                headerStyle: {
+                  backgroundColor: theme.headerBackground,
+                  elevation: 0,
+                  shadowOpacity: 0,
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.border,
+                },
+                headerTintColor: theme.text,
+                headerTitleStyle: {
+                  color: theme.text,
+                  fontWeight: '600',
+                },
+              }}
+            />
           </>
         )}
       </Stack.Navigator>
