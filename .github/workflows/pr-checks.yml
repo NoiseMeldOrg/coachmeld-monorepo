@@ -77,15 +77,30 @@ jobs:
         echo "📦 Checking mobile node_modules..."
         ls -la node_modules/@coachmeld/ || echo "⚠️ Workspace packages not linked yet"
     
+    - name: Install missing type definitions
+      run: |
+        echo "📦 Installing missing type definitions..."
+        cd ../..
+        bun add -D @types/minimatch @types/node
+    
     - name: TypeScript check
       run: |
         echo "🔍 Running TypeScript check for mobile app..."
-        # Use npx to ensure proper resolution in monorepo with fallback
-        npx tsc --noEmit --skipLibCheck || {
-          echo "❌ TypeScript check failed. Checking TypeScript installation..."
-          which tsc
-          tsc --version
-          exit 1
+        # Use npx tsc with proper configuration
+        npx tsc --noEmit --skipLibCheck --types "node,react,react-native" || {
+          echo "❌ Trying alternative TypeScript check..."
+          # Alternative: create temporary tsconfig for CI
+          cat > tsconfig.ci.json << 'EOF'
+        {
+          "extends": "./tsconfig.json",
+          "compilerOptions": {
+            "skipLibCheck": true,
+            "types": ["node", "react", "react-native"],
+            "typeRoots": ["../../node_modules/@types", "node_modules/@types"]
+          }
+        }
+        EOF
+          npx tsc --noEmit -p tsconfig.ci.json
         }
     
     - name: Check for console.log statements
