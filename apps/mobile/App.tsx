@@ -1,5 +1,5 @@
 import 'react-native-url-polyfill/auto';
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { Platform } from 'react-native';
@@ -40,7 +40,7 @@ function AppContent() {
   const { user, loading } = useAuth();
   
   // Configure Android navigation bar button colors based on theme
-  const setNavigationBarStyle = React.useCallback(async () => {
+  const setNavigationBarStyle = useCallback(async () => {
     if (Platform.OS === 'android') {
       try {
         // Set navigation bar button color (light for dark theme, dark for light theme)
@@ -55,7 +55,7 @@ function AppContent() {
     }
   }, [isDark]);
   
-  React.useEffect(() => {
+  useEffect(() => {
     setNavigationBarStyle();
   }, [setNavigationBarStyle]);
   
@@ -223,7 +223,7 @@ function AppContent() {
 
 export default function App() {
   // Add error boundary and debug logging for web deployment
-  React.useEffect(() => {
+  useEffect(() => {
     console.log('App starting...');
     console.log('Platform:', Platform.OS);
     console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
