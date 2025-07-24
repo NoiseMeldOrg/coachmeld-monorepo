@@ -1,4 +1,5 @@
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
+const webpack = require('webpack');
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
@@ -18,6 +19,14 @@ module.exports = async function (env, argv) {
     '.web.ts',
     '.web.tsx',
     ...config.resolve.extensions,
+  ];
+
+  // Add ProvidePlugin to make React globally available
+  config.plugins = [
+    ...config.plugins,
+    new webpack.ProvidePlugin({
+      React: 'react',
+    }),
   ];
 
   return config;

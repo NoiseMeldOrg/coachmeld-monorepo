@@ -1,5 +1,11 @@
-// Import React before anything else to ensure it's available globally
+// Import React and make it globally available for web builds
 import React from 'react';
+
+// Ensure React is globally available for web platform
+if (typeof window !== 'undefined') {
+  (window as any).React = React;
+}
+
 import { registerRootComponent } from 'expo';
 
 // Import web polyfills for React Native modules
