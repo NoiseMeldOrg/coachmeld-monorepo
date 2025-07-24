@@ -20,6 +20,9 @@ module.exports = async function (env, argv) {
     'react-dom': require.resolve('react-dom'),
   };
 
+  // Ensure only one copy of React
+  config.resolve.dedupe = ['react', 'react-dom'];
+
   // Add fallbacks for Node.js modules
   config.resolve.fallback = {
     ...config.resolve.fallback,
@@ -35,6 +38,10 @@ module.exports = async function (env, argv) {
     ...config.plugins,
     new webpack.ProvidePlugin({
       React: 'react',
+    }),
+    new webpack.DefinePlugin({
+      __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
   ];
 
