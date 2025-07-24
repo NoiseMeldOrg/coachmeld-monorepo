@@ -1,0 +1,107 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  mobile-checks:
+    name: Mobile App Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: apps/mobile/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: TypeScript check
+      run: npx tsc --noEmit
+    
+    - name: Check for console.log statements
+      run: |
+        if grep -r "console\.log" src/ --exclude-dir=node_modules --include="*.ts" --include="*.tsx"; then
+          echo "❌ Found console.log statements. Please remove them before merging."
+          exit 1
+        else
+          echo "✅ No console.log statements found."
+        fi
+    
+    - name: Check for sensitive data
+      run: |
+        if grep -r -i "password\|secret\|key\|token" src/ --exclude-dir=node_modules --include="*.ts" --include="*.tsx" | grep -v "// @ts-ignore" | grep -v "password:" | grep -v "keyboardType" | grep -v "secureTextEntry"; then
+          echo "❌ Potential sensitive data found. Please review."
+          exit 1
+        else
+          echo "✅ No obvious sensitive data found."
+        fi
+    
+    - name: Build check (web export)
+      run: npx expo export --platform web
+      env:
+        EXPO_NO_TELEMETRY: 1
+
+  admin-checks:
+    name: Admin App Checks  
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm' 
+        cache-dependency-path: apps/admin/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: TypeScript check
+      run: npx tsc --noEmit
+    
+    - name: Next.js build check
+      run: npm run build
+      env:
+        NEXT_TELEMETRY_DISABLED: 1
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Audit mobile dependencies
+      run: |
+        cd apps/mobile
+        npm audit --audit-level=high
+    
+    - name: Audit admin dependencies  
+      run: |
+        cd apps/admin
+        npm audit --audit-level=high

@@ -1,0 +1,147 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'mobile-v*'
+      - 'admin-v*'
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'Which app to release (mobile/admin)'
+        required: true
+        default: 'mobile'
+        type: choice
+        options:
+        - mobile
+        - admin
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  mobile-release:
+    name: Mobile App Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/mobile-v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.app == 'mobile')
+    defaults:
+      run:
+        working-directory: apps/mobile
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: apps/mobile/package-lock.json
+    
+    - name: Setup Expo CLI
+      uses: expo/expo-github-action@v8
+      with:
+        expo-version: latest
+        token: ${{ secrets.EXPO_TOKEN }}
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build Android APK (Preview)
+      run: eas build --platform android --profile preview --non-interactive
+      env:
+        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    
+    - name: Extract version from tag or input
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/mobile-v}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: mobile-v${{ steps.version.outputs.version }}
+        release_name: CoachMeld Mobile v${{ steps.version.outputs.version }}
+        body: |
+          ## CoachMeld Mobile v${{ steps.version.outputs.version }}
+          
+          ### Changes
+          - See CHANGELOG.md for detailed changes
+          
+          ### Download
+          - Android APK available from EAS Build dashboard
+          - iOS build submitted to TestFlight
+          
+          ### Installation
+          - For Android: Download APK from EAS Build
+          - For iOS: Available via TestFlight
+        draft: false
+        prerelease: false
+
+  admin-release:
+    name: Admin App Release  
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/admin-v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.app == 'admin')
+    defaults:
+      run:
+        working-directory: apps/admin
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: apps/admin/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+      env:
+        NEXT_TELEMETRY_DISABLED: 1
+    
+    - name: Extract version from tag or input
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/admin-v}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: admin-v${{ steps.version.outputs.version }}
+        release_name: CoachMeld Admin v${{ steps.version.outputs.version }}
+        body: |
+          ## CoachMeld Admin Dashboard v${{ steps.version.outputs.version }}
+          
+          ### Changes
+          - See CHANGELOG.md for detailed changes
+          
+          ### Deployment
+          - Automatically deployed to production environment
+          - Database migrations may be required
+          
+          ### Requirements
+          - Node.js 18+
+          - Next.js 14
+          - Supabase backend connection
+        draft: false
+        prerelease: false
