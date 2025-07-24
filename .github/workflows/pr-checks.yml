@@ -24,7 +24,7 @@ jobs:
       run: bun install
     
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           node_modules
@@ -57,7 +57,7 @@ jobs:
         bun-version: latest
     
     - name: Restore dependencies cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           node_modules
@@ -179,7 +179,7 @@ jobs:
         bun-version: latest
     
     - name: Restore dependencies cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           node_modules
