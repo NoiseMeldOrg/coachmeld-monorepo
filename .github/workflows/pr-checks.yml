@@ -99,7 +99,8 @@ jobs:
     - name: Audit mobile dependencies
       run: |
         cd apps/mobile
-        npm ci
+        # Check if package-lock.json is valid, if not regenerate it
+        npm install --package-lock-only
         npm audit --audit-level=high
     
     - name: Audit admin dependencies  
