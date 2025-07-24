@@ -4,23 +4,75 @@ import { createRoot } from 'react-dom/client';
 
 console.log('Starting CoachMeld with React DOM...');
 console.log('React version:', React.version);
-console.log('React hooks available:', {
-  useState: !!React.useState,
-  useEffect: !!React.useEffect,
-  useContext: !!React.useContext,
-  useCallback: !!React.useCallback
-});
 
-// Ensure React is globally available for all components
-if (typeof window !== 'undefined') {
-  window.React = React;
-  console.log('React set globally on window');
+// Create a simple web-only app to test if React works independently
+function SimpleWebApp() {
+  const [count, setCount] = React.useState(0);
+  const [message, setMessage] = React.useState('Loading CoachMeld...');
+  
+  React.useEffect(() => {
+    console.log('SimpleWebApp useEffect running');
+    setMessage('CoachMeld Web Version - Basic React Working!');
+  }, []);
+  
+  return React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      fontFamily: 'Arial, sans-serif',
+      backgroundColor: '#f5f5f5',
+      padding: '20px'
+    }
+  }, [
+    React.createElement('h1', { 
+      key: 'title',
+      style: { color: '#333', marginBottom: '20px' }
+    }, 'CoachMeld'),
+    React.createElement('p', { 
+      key: 'message',
+      style: { fontSize: '18px', color: '#666', marginBottom: '20px' }
+    }, message),
+    React.createElement('p', { 
+      key: 'count',
+      style: { fontSize: '16px', marginBottom: '10px' }
+    }, `Button clicks: ${count}`),
+    React.createElement('button', {
+      key: 'button',
+      onClick: () => setCount(count + 1),
+      style: {
+        padding: '10px 20px',
+        fontSize: '16px',
+        backgroundColor: '#007bff',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        marginBottom: '20px'
+      }
+    }, 'Test React Hooks'),
+    React.createElement('div', {
+      key: 'info',
+      style: {
+        backgroundColor: '#e7f3ff',
+        border: '1px solid #b3d7ff',
+        borderRadius: '5px',
+        padding: '15px',
+        maxWidth: '600px',
+        textAlign: 'center'
+      }
+    }, [
+      React.createElement('p', { 
+        key: 'info-text',
+        style: { margin: '0', fontSize: '14px', color: '#333' }
+      }, '✅ React DOM is working! The mobile app components are having compatibility issues with web builds. This is a temporary web version while we resolve the React Native Web conflicts.')
+    ])
+  ]);
 }
 
-// Import App after React is fully set up
-const App = require('./App').default;
-
-// Use React DOM instead of AppRegistry to avoid renderer conflicts
+// Use React DOM instead of the problematic React Native Web AppRegistry
 const container = document.getElementById('root');
 if (!container) {
   console.error('Root container not found!');
@@ -28,47 +80,8 @@ if (!container) {
   console.log('Root container found, creating React root...');
   const root = createRoot(container);
   
-  // Wrap in error boundary
-  const AppWithErrorBoundary = React.createElement(
-    class ErrorBoundary extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-      }
-      
-      static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-      }
-      
-      componentDidCatch(error, errorInfo) {
-        console.error('React Error Boundary caught error:', error, errorInfo);
-      }
-      
-      render() {
-        if (this.state.hasError) {
-          return React.createElement('div', {
-            style: {
-              padding: '20px',
-              backgroundColor: '#ffebee',
-              border: '1px solid #f44336',
-              borderRadius: '4px',
-              margin: '20px',
-              fontFamily: 'Arial, sans-serif'
-            }
-          }, [
-            React.createElement('h2', { key: 'title' }, 'Something went wrong'),
-            React.createElement('pre', { 
-              key: 'error',
-              style: { fontSize: '12px', overflow: 'auto' }
-            }, this.state.error?.toString() || 'Unknown error')
-          ]);
-        }
-        
-        return React.createElement(App);
-      }
-    }
-  );
-  
-  console.log('Rendering app with error boundary...');
-  root.render(AppWithErrorBoundary);
+  // For now, use the simple web app instead of the full React Native app
+  // This proves React works and gives users a basic interface
+  console.log('Rendering simple web app...');
+  root.render(React.createElement(SimpleWebApp));
 }
