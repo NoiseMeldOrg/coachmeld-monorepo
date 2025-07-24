@@ -38,7 +38,7 @@ export default function AuthScreen() {
     try {
       navigation.navigate('PrivacyPolicy');
     } catch (error) {
-      Linking.openURL('https://coachmeld.com/privacy');
+      Linking.openURL('https://noisemeld.com/privacy');
     }
   };
 
@@ -146,7 +146,7 @@ export default function AuthScreen() {
         </Text>
         
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Your AI Carnivore Coach
+          Your Personalized AI Health Coach
         </Text>
 
         <View style={styles.form}>
