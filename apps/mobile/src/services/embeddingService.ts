@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { geminiClientService } from './geminiClientService';
+import { logger } from '@coachmeld/shared-utils';
 
 export interface DocumentChunk {
   content: string;
@@ -71,7 +72,7 @@ export class EmbeddingService {
         throw error;
       }
 
-      console.log(`Successfully embedded ${documents.length} chunks for document: ${title}`);
+      logger.info(`Successfully embedded ${documents.length} chunks for document: ${title}`);
     } catch (error) {
       console.error('Error embedding document:', error);
       throw error;
@@ -129,7 +130,7 @@ export class EmbeddingService {
         }
       }
 
-      console.log(`Successfully updated embeddings for ${documents.length} documents`);
+      logger.info(`Successfully updated embeddings for ${documents.length} documents`);
     } catch (error) {
       console.error('Error updating document embeddings:', error);
       throw error;

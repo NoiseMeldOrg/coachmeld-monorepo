@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { embeddingService } from './embeddingService';
+import { logger } from '@coachmeld/shared-utils';
 
 export interface RAGDocument {
   document_id: string;
@@ -28,7 +29,7 @@ export class RAGService {
       // Use the embedding service which calls Gemini via Edge Function
       return await embeddingService.embedQuery(text);
     } catch (error) {
-      console.log('Gemini embedding service not available, using mock embedding');
+      logger.warn('Gemini embedding service not available, using mock embedding');
       // Fallback to mock embedding for development
       return Array(768).fill(0).map(() => Math.random() * 2 - 1);
     }
