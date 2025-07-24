@@ -2,7 +2,7 @@
   "name": "@coachmeld/mobile",
   "version": "0.8.0",
   "private": true,
-  "main": "debug.web.js",
+  "main": "pure-react.web.js",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
