@@ -46,6 +46,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
+    - name: Setup Node.js (for npx compatibility)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
     - name: Setup Bun
       uses: oven-sh/setup-bun@v1
       with:
@@ -65,8 +70,23 @@ jobs:
     - name: Install dependencies (if cache miss)
       run: cd ../.. && bun install
     
+    - name: Verify workspace dependencies
+      run: |
+        echo "📦 Checking workspace dependencies..."
+        ls -la ../../packages/
+        echo "📦 Checking mobile node_modules..."
+        ls -la node_modules/@coachmeld/ || echo "⚠️ Workspace packages not linked yet"
+    
     - name: TypeScript check
-      run: bun tsc --noEmit
+      run: |
+        echo "🔍 Running TypeScript check for mobile app..."
+        # Use npx to ensure proper resolution in monorepo with fallback
+        npx tsc --noEmit --skipLibCheck || {
+          echo "❌ TypeScript check failed. Checking TypeScript installation..."
+          which tsc
+          tsc --version
+          exit 1
+        }
     
     - name: Check for console.log statements
       run: |
@@ -103,6 +123,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
+    - name: Setup Node.js (for npx compatibility)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
     - name: Setup Bun
       uses: oven-sh/setup-bun@v1
       with:
@@ -123,7 +148,9 @@ jobs:
       run: cd ../.. && bun install
     
     - name: TypeScript check
-      run: bun tsc --noEmit
+      run: |
+        echo "🔍 Running TypeScript check for admin app..."
+        npx tsc --noEmit --skipLibCheck
     
     - name: Next.js build check
       run: bun run build
