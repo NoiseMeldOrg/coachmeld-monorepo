@@ -51,6 +51,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
   }
 )
-Button.displayName = "Button"
+// Safely set displayName
+if (Button) {
+  Button.displayName = "Button"
+}
 
 export { Button, buttonVariants }

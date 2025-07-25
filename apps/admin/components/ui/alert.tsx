@@ -30,7 +30,10 @@ const Alert = React.forwardRef<
     {...props}
   />
 ))
-Alert.displayName = "Alert"
+// Safely set displayName
+if (Alert) {
+  Alert.displayName = "Alert"
+}
 
 const AlertTitle = React.forwardRef<
   HTMLParagraphElement,
@@ -42,7 +45,10 @@ const AlertTitle = React.forwardRef<
     {...props}
   />
 ))
-AlertTitle.displayName = "AlertTitle"
+// Safely set displayName
+if (AlertTitle) {
+  AlertTitle.displayName = "AlertTitle"
+}
 
 const AlertDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -54,6 +60,9 @@ const AlertDescription = React.forwardRef<
     {...props}
   />
 ))
-AlertDescription.displayName = "AlertDescription"
+// Safely set displayName
+if (AlertDescription) {
+  AlertDescription.displayName = "AlertDescription"
+}
 
 export { Alert, AlertTitle, AlertDescription }

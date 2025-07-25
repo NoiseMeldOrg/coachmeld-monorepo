@@ -15,10 +15,19 @@ const nextConfig = {
   },
   // Force production optimization
   swcMinify: true,
-  // Ensure static files are served correctly
+  // Preserve component displayNames in production
+  productionBrowserSourceMaps: false,
+  experimental: {
+    // Ensure component names are preserved
+    swcMinifyDebugOptions: {
+      keep_fnames: true,
+      keep_classnames: true,
+    },
+  },
+  // Generate unique build ID to prevent chunk loading issues
   generateBuildId: async () => {
-    // Use a consistent build ID to help with caching
-    return 'coachmeld-admin-build'
+    // Use timestamp-based build ID to ensure fresh chunks
+    return `coachmeld-admin-${Date.now()}`
   },
 }
 

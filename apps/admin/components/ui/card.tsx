@@ -15,7 +15,10 @@ const Card = React.forwardRef<
     {...props}
   />
 ))
-Card.displayName = "Card"
+// Safely set displayName
+if (Card) {
+  Card.displayName = "Card"
+}
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,
@@ -27,7 +30,10 @@ const CardHeader = React.forwardRef<
     {...props}
   />
 ))
-CardHeader.displayName = "CardHeader"
+// Safely set displayName
+if (CardHeader) {
+  CardHeader.displayName = "CardHeader"
+}
 
 const CardTitle = React.forwardRef<
   HTMLParagraphElement,
@@ -42,7 +48,10 @@ const CardTitle = React.forwardRef<
     {...props}
   />
 ))
-CardTitle.displayName = "CardTitle"
+// Safely set displayName
+if (CardTitle) {
+  CardTitle.displayName = "CardTitle"
+}
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -54,7 +63,10 @@ const CardDescription = React.forwardRef<
     {...props}
   />
 ))
-CardDescription.displayName = "CardDescription"
+// Safely set displayName
+if (CardDescription) {
+  CardDescription.displayName = "CardDescription"
+}
 
 const CardContent = React.forwardRef<
   HTMLDivElement,
@@ -62,7 +74,10 @@ const CardContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
 ))
-CardContent.displayName = "CardContent"
+// Safely set displayName
+if (CardContent) {
+  CardContent.displayName = "CardContent"
+}
 
 const CardFooter = React.forwardRef<
   HTMLDivElement,
@@ -74,6 +89,9 @@ const CardFooter = React.forwardRef<
     {...props}
   />
 ))
-CardFooter.displayName = "CardFooter"
+// Safely set displayName
+if (CardFooter) {
+  CardFooter.displayName = "CardFooter"
+}
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
