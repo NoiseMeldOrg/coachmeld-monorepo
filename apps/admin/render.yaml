@@ -4,7 +4,8 @@ services:
     runtime: node
     region: oregon # Change to your preferred region
     plan: starter # Change to 'standard' for production
-    buildCommand: npm install; npm ci; npm run build
+    rootDir: apps/admin
+    buildCommand: cd ../.. && npm install && cd apps/admin && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
     envVars:
@@ -20,5 +21,5 @@ services:
         sync: false # Set in Render dashboard
       - key: PORT
         value: 3000
-    autoDeploy: true # Automatically deploy on push to master
-    branch: master # or main, depending on your default branch
+    autoDeploy: true # Automatically deploy on push to main
+    branch: main # Fixed to use main branch
