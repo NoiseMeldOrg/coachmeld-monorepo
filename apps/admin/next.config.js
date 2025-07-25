@@ -15,6 +15,15 @@ const nextConfig = {
   },
   // Force production optimization
   swcMinify: true,
+  // Preserve component displayNames in production
+  productionBrowserSourceMaps: false,
+  experimental: {
+    // Ensure component names are preserved
+    swcMinifyDebugOptions: {
+      keep_fnames: true,
+      keep_classnames: true,
+    },
+  },
   // Ensure static files are served correctly
   generateBuildId: async () => {
     // Use a consistent build ID to help with caching

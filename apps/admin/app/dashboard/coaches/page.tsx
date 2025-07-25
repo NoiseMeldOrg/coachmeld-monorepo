@@ -51,20 +51,41 @@ export default function CoachesPage() {
       if (!response.ok) throw new Error('Failed to load coaches')
       
       const data = await response.json()
-      setCoaches(data.coaches || [])
       
-      // Calculate stats
-      const coachesList = data.coaches || []
+      // Ensure data structure is valid
+      const coachesList = Array.isArray(data?.coaches) ? data.coaches : []
+      
+      // Add default values for missing properties
+      const processedCoaches = coachesList.map((coach: any) => ({
+        id: coach?.id || '',
+        name: coach?.name || 'Unknown Coach',
+        description: coach?.description || '',
+        coach_type: coach?.coach_type || 'general',
+        is_active: coach?.is_active !== false,
+        is_free: coach?.is_free === true,
+        monthly_price: coach?.monthly_price || 0,
+        knowledge_base_enabled: coach?.knowledge_base_enabled === true,
+        features: Array.isArray(coach?.features) ? coach.features : [],
+        color_theme: coach?.color_theme || { primary: '#0084ff' },
+        ...coach
+      }))
+      
+      setCoaches(processedCoaches)
+      
+      // Calculate stats with safe filtering
       setStats({
-        total: coachesList.length,
-        active: coachesList.filter((c: Coaches) => c.is_active).length,
-        inactive: coachesList.filter((c: Coaches) => !c.is_active).length,
-        free: coachesList.filter((c: Coaches) => c.is_free).length,
-        paid: coachesList.filter((c: Coaches) => !c.is_free).length,
+        total: processedCoaches.length,
+        active: processedCoaches.filter((c: Coaches) => c.is_active === true).length,
+        inactive: processedCoaches.filter((c: Coaches) => c.is_active !== true).length,
+        free: processedCoaches.filter((c: Coaches) => c.is_free === true).length,
+        paid: processedCoaches.filter((c: Coaches) => c.is_free !== true).length,
       })
     } catch (error) {
       console.error('Error loading coaches:', error)
       toast.error('Failed to load coaches')
+      // Set empty state on error
+      setCoaches([])
+      setStats({ total: 0, active: 0, inactive: 0, free: 0, paid: 0 })
     } finally {
       setLoading(false)
     }
@@ -187,14 +208,18 @@ export default function CoachesPage() {
 
   const filteredCoaches = coaches
     .filter(coach => {
+      // Ensure coach object exists
+      if (!coach) return false
+      
+      // Filter by active status
       if (!showInactive && !coach.is_active) return false
       if (!searchQuery) return true
       
       const query = searchQuery.toLowerCase()
       return (
-        coach.name.toLowerCase().includes(query) ||
-        coach.description?.toLowerCase().includes(query) ||
-        coach.coach_type.toLowerCase().includes(query)
+        (coach.name || '').toLowerCase().includes(query) ||
+        (coach.description || '').toLowerCase().includes(query) ||
+        (coach.coach_type || '').toLowerCase().includes(query)
       )
     })
 
