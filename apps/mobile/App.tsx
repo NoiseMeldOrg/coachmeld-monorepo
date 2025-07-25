@@ -34,6 +34,12 @@ import { EditProfileFieldScreen } from './src/screens/EditProfileFieldScreen';
 import { CoachChatScreen } from './src/screens/CoachChatScreen';
 import { SavedRecipesScreen } from './src/screens/SavedRecipesScreen';
 import { PrivacyPolicyScreen } from './src/screens/PrivacyPolicyScreen';
+import { GDPRConsentScreen } from './src/screens/GDPRConsentScreen';
+import { PrivacySettingsScreen } from './src/screens/PrivacySettingsScreen';
+import { DataExportScreen } from './src/screens/DataExportScreen';
+import { DeleteAccountScreen } from './src/screens/DeleteAccountScreen';
+import { DataCorrectionScreen } from './src/screens/DataCorrectionScreen';
+import ConsentManagementScreen from './src/screens/ConsentManagementScreen';
 
 const Stack = createStackNavigator();
 
@@ -82,6 +88,13 @@ function AppContent() {
         EmailConfirmation: 'email-confirmation',
         EditProfile: 'edit-profile',
         EditProfileField: 'edit-profile-field',
+        PrivacyPolicy: 'privacy-policy',
+        GDPRConsent: 'gdpr-consent',
+        PrivacySettings: 'privacy-settings',
+        DataExport: 'data-export',
+        DeleteAccount: 'delete-account',
+        DataCorrection: 'data-correction',
+        ConsentManagement: 'consent-management',
       },
     },
   };
@@ -210,21 +223,50 @@ function AppContent() {
               name="PrivacyPolicy" 
               component={PrivacyPolicyScreen} 
               options={{
-                headerShown: true,
-                headerTitle: 'Privacy Policy',
-                headerBackTitle: 'Back',
-                headerStyle: {
-                  backgroundColor: theme.headerBackground,
-                  elevation: 0,
-                  shadowOpacity: 0,
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.border,
-                },
-                headerTintColor: theme.text,
-                headerTitleStyle: {
-                  color: theme.text,
-                  fontWeight: '600',
-                },
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="GDPRConsent" 
+              component={GDPRConsentScreen} 
+              options={{
+                headerShown: false,
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen 
+              name="PrivacySettings" 
+              component={PrivacySettingsScreen} 
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="DataExport" 
+              component={DataExportScreen} 
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="DeleteAccount" 
+              component={DeleteAccountScreen} 
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="DataCorrection" 
+              component={DataCorrectionScreen} 
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="ConsentManagement" 
+              component={ConsentManagementScreen} 
+              options={{
+                headerShown: false,
               }}
             />
           </>
@@ -240,21 +282,15 @@ function AppContent() {
               name="PrivacyPolicy" 
               component={PrivacyPolicyScreen} 
               options={{
-                headerShown: true,
-                headerTitle: 'Privacy Policy',
-                headerBackTitle: 'Back',
-                headerStyle: {
-                  backgroundColor: theme.headerBackground,
-                  elevation: 0,
-                  shadowOpacity: 0,
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.border,
-                },
-                headerTintColor: theme.text,
-                headerTitleStyle: {
-                  color: theme.text,
-                  fontWeight: '600',
-                },
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="GDPRConsent" 
+              component={GDPRConsentScreen} 
+              options={{
+                headerShown: false,
+                gestureEnabled: false,
               }}
             />
           </>

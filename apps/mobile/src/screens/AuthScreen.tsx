@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,9 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types/navigation';
+import { useEUDetection } from '../hooks/useEUDetection';
+import { GDPRConsentFlow } from '../components/GDPRConsentFlow';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type AuthMode = 'signIn' | 'signUp' | 'forgotPassword';
 
@@ -26,12 +29,18 @@ export default function AuthScreen() {
   const { theme } = useTheme();
   const { signIn, signUp, resetPassword } = useAuth();
   const navigation = useNavigation<AuthScreenNavigationProp>();
+  const { isEUUser, isLoading: isDetectingEU } = useEUDetection();
+  
   const [mode, setMode] = useState<AuthMode>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showGDPRConsent, setShowGDPRConsent] = useState(false);
+  const [gdprConsentCompleted, setGdprConsentCompleted] = useState(false);
+
+
 
   const handlePrivacyPolicyPress = () => {
     // Navigate to Privacy Policy screen if in app context, otherwise open web link
@@ -62,6 +71,12 @@ export default function AuthScreen() {
 
     if (mode === 'signUp' && !privacyAccepted) {
       Alert.alert('Privacy Policy Required', 'You must accept the Privacy Policy to create an account');
+      return;
+    }
+
+    // For EU users signing up, show GDPR consent flow first
+    if (mode === 'signUp' && isEUUser && !gdprConsentCompleted) {
+      setShowGDPRConsent(true);
       return;
     }
 
@@ -134,6 +149,26 @@ export default function AuthScreen() {
         return 'Send Reset Email';
     }
   };
+
+  const handleGDPRConsentComplete = () => {
+    setShowGDPRConsent(false);
+    setGdprConsentCompleted(true);
+    // Automatically proceed with signup after GDPR consent
+    setTimeout(() => {
+      handleSubmit();
+    }, 100); // Small delay to ensure state updates
+  };
+
+  // Show GDPR consent flow for EU users during signup
+  if (showGDPRConsent && isEUUser) {
+    return (
+      <GDPRConsentFlow
+        isEUUser={true}
+        onComplete={handleGDPRConsentComplete}
+        onSkip={() => setShowGDPRConsent(false)}
+      />
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -231,6 +266,11 @@ export default function AuthScreen() {
                   </Text>
                   {' '}and understand how my data will be processed.
                 </Text>
+                {isEUUser && (
+                  <Text style={[styles.gdprNote, { color: theme.textSecondary }]}>
+                    As an EU resident, you'll have additional privacy options in the next step.
+                  </Text>
+                )}
               </View>
             </TouchableOpacity>
           )}
@@ -387,5 +427,10 @@ const styles = StyleSheet.create({
   privacyLink: {
     textDecorationLine: 'underline',
     fontWeight: '500',
+  },
+  gdprNote: {
+    fontSize: 12,
+    marginTop: 4,
+    lineHeight: 16,
   },
 });

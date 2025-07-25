@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { GDPRRequest, CreateGDPRRequestPayload, GDPRRequestStats, mapAccountDeletionToGDPR } from '@/types/gdpr'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,150 +17,94 @@ export async function GET(request: NextRequest) {
     const requestType = searchParams.get('type')
     const userId = searchParams.get('user_id')
     const includeStats = searchParams.get('include_stats') === 'true'
-    const source = searchParams.get('source') || 'all' // 'mobile', 'gdpr', or 'all'
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const offset = (page - 1) * limit
 
-    let allRequests: GDPRRequest[] = []
-
-    // Fetch mobile app deletion requests
-    if (source === 'mobile' || source === 'all') {
-      let mobileQuery = supabase
-        .from('account_deletion_requests')
-        .select('*')
-        .order('requested_at', { ascending: false })
-
-      // Apply filters
-      if (status && status !== 'all') {
-        mobileQuery = mobileQuery.eq('status', status)
-      }
-      if (userId) {
-        mobileQuery = mobileQuery.eq('user_id', userId)
-      }
-      // Mobile app only has deletion requests
-      if (requestType && requestType !== 'all' && requestType !== 'delete') {
-        mobileQuery = mobileQuery.eq('id', 'impossible-uuid') // Return no results
-      }
-
-      const { data: mobileRequests, error: mobileError } = await mobileQuery
-
-      if (mobileError) {
-        console.error('Error fetching mobile deletion requests:', mobileError)
-      } else if (mobileRequests) {
-        // Map requests without fetching user details (since we don't have permission)
-        const requestsWithUserInfo = mobileRequests.map((req) => {
-          const mappedRequest = mapAccountDeletionToGDPR(req)
-          
-          // Calculate SLA status
-          const requestDate = new Date(req.requested_at)
-          const now = new Date()
-          const deadline = new Date(requestDate.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
-          const warningDate = new Date(requestDate.getTime() + 27 * 24 * 60 * 60 * 1000) // 27 days
-          
-          mappedRequest.sla_deadline = deadline.toISOString()
-          if (req.status === 'completed' || req.status === 'cancelled') {
-            mappedRequest.sla_status = null
-          } else if (now > deadline) {
-            mappedRequest.sla_status = 'overdue'
-          } else if (now > warningDate) {
-            mappedRequest.sla_status = 'warning'
-          } else {
-            mappedRequest.sla_status = 'on_track'
-          }
-          
-          // Use email from the request itself (already stored in account_deletion_requests)
-          mappedRequest.user_email = req.email
-          mappedRequest.user_full_name = undefined // We can't get this without auth.users access
-
-          return mappedRequest
-        })
-        
-        allRequests = [...allRequests, ...requestsWithUserInfo]
-      }
-    }
-
-    // Fetch GDPR requests if they exist
-    if (source === 'gdpr' || source === 'all') {
-      let gdprQuery = supabase
-        .from('gdpr_requests_overview')
-        .select('*')
-        .order('requested_at', { ascending: false })
-
-      // Apply filters
-      if (status && status !== 'all') {
-        gdprQuery = gdprQuery.eq('status', status)
-      }
-      if (requestType && requestType !== 'all') {
-        gdprQuery = gdprQuery.eq('request_type', requestType)
-      }
-      if (userId) {
-        gdprQuery = gdprQuery.eq('user_id', userId)
-      }
-
-      const { data: gdprRequests, error: gdprError } = await gdprQuery
-
-      if (!gdprError && gdprRequests) {
-        // For deletion requests, fetch deletion details
-        const requestsWithDetails = await Promise.all(
-          gdprRequests.map(async (request: any) => {
-            if (request.request_type === 'delete') {
-              const { data: deletionDetails } = await supabase
-                .from('gdpr_deletion_details')
-                .select('*')
-                .eq('request_id', request.id)
-                .single()
-
-              return {
-                ...request,
-                deletion_details: deletionDetails
-              }
-            }
-            return request
-          })
+    // Build query for new gdpr_data_requests table
+    let query = supabase
+      .from('gdpr_data_requests')
+      .select(`
+        *,
+        profiles:user_id (
+          email,
+          full_name
         )
-        
-        allRequests = [...allRequests, ...requestsWithDetails]
-      }
+      `)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    // Apply filters
+    if (status && status !== 'all') {
+      query = query.eq('status', status)
+    }
+    if (requestType && requestType !== 'all') {
+      query = query.eq('request_type', requestType)
+    }
+    if (userId) {
+      query = query.eq('user_id', userId)
     }
 
-    // Sort combined results by requested_at (newest first)
-    allRequests.sort((a, b) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime())
+    const { data: gdprRequests, error: gdprError } = await query
+
+    if (gdprError) {
+      console.error('Error fetching GDPR requests:', gdprError)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+
+    // Calculate SLA status for each request
+    const requestsWithSLA = gdprRequests?.map((req) => {
+      const requestDate = new Date(req.created_at)
+      const now = new Date()
+      const deadline = new Date(requestDate.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      const warningDate = new Date(requestDate.getTime() + 27 * 24 * 60 * 60 * 1000) // 27 days
+      
+      // Calculate SLA status
+      let sla_status = null
+      if (req.status === 'completed' || req.status === 'cancelled') {
+        sla_status = null
+      } else if (now > deadline) {
+        sla_status = 'overdue'
+      } else if (now > warningDate) {
+        sla_status = 'warning'
+      } else {
+        sla_status = 'on_track'
+      }
+      
+      return {
+        ...req,
+        sla_deadline: deadline.toISOString(),
+        sla_status,
+        user_email: req.profiles?.email || null,
+        user_full_name: req.profiles?.full_name || null
+      }
+    }) || []
 
     // Get stats if requested
-    let stats: GDPRRequestStats | null = null
+    let stats = null
     if (includeStats) {
-      if (source === 'mobile') {
-        // Use mobile-specific stats
-        const { data: statsData, error: statsError } = await supabase
-          .rpc('get_mobile_deletion_stats')
-
-        if (!statsError && statsData) {
-          stats = statsData
-        }
-      } else if (source === 'gdpr') {
-        // Use GDPR-specific stats
-        const { data: statsData, error: statsError } = await supabase
-          .rpc('get_gdpr_stats')
-
-        if (!statsError && statsData) {
-          stats = statsData
-        }
-      } else {
-        // Calculate combined stats from all requests
-        stats = {
-          total: allRequests.length,
-          pending: allRequests.filter(r => r.status === 'pending').length,
-          processing: allRequests.filter(r => r.status === 'processing').length,
-          completed: allRequests.filter(r => r.status === 'completed').length,
-          failed: allRequests.filter(r => r.status === 'failed').length,
-          cancelled: allRequests.filter(r => r.status === 'cancelled').length,
-          overdue: allRequests.filter(r => r.sla_status === 'overdue').length,
-          dueSoon: allRequests.filter(r => r.sla_status === 'warning').length,
-        }
+      // Calculate stats from current results
+      stats = {
+        total: requestsWithSLA.length,
+        pending: requestsWithSLA.filter(r => r.status === 'pending').length,
+        processing: requestsWithSLA.filter(r => r.status === 'processing').length,
+        completed: requestsWithSLA.filter(r => r.status === 'completed').length,
+        failed: requestsWithSLA.filter(r => r.status === 'failed').length,
+        cancelled: requestsWithSLA.filter(r => r.status === 'cancelled').length,
+        overdue: requestsWithSLA.filter(r => r.sla_status === 'overdue').length,
+        dueSoon: requestsWithSLA.filter(r => r.sla_status === 'warning').length,
       }
     }
 
     return NextResponse.json({
-      requests: allRequests,
-      stats
+      requests: requestsWithSLA,
+      stats,
+      pagination: {
+        page,
+        limit,
+        total: requestsWithSLA.length,
+        has_more: requestsWithSLA.length === limit
+      }
     })
   } catch (error: any) {
     console.error('Unexpected error:', error)
@@ -179,52 +122,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const payload: CreateGDPRRequestPayload = await request.json()
+    const payload = await request.json()
 
     // Validate required fields
     if (!payload.user_id || !payload.request_type) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // If this is a mobile app deletion request, create it in account_deletion_requests
-    if (payload.request_type === 'delete' && payload.metadata?.source === 'mobile_app') {
-      // We need the email to be provided in the payload since we can't access auth.users
-      if (!payload.requested_by) {
-        return NextResponse.json({ error: 'Email (requested_by) is required for mobile deletion requests' }, { status: 400 })
-      }
-
-      const { data: deletionRequest, error: deletionError } = await supabase
-        .from('account_deletion_requests')
-        .insert({
-          user_id: payload.user_id,
-          email: payload.requested_by, // Use the provided email
-          reason: payload.deletion_details?.deletion_reason || payload.notes,
-          status: 'pending',
-          notes: payload.notes
-        })
-        .select()
-        .single()
-
-      if (deletionError) {
-        console.error('Error creating deletion request:', deletionError)
-        return NextResponse.json({ error: 'Failed to create deletion request' }, { status: 500 })
-      }
-
-      return NextResponse.json({
-        request: deletionRequest,
-        message: 'Account deletion request created successfully'
-      })
-    }
-
-    // Otherwise, use the original GDPR flow
+    // Create GDPR data request using new schema
     const { data: gdprRequest, error: requestError } = await supabase
-      .from('gdpr_requests')
+      .from('gdpr_data_requests')
       .insert({
         user_id: payload.user_id,
         request_type: payload.request_type,
-        requested_by: payload.requested_by || user.email,
-        notes: payload.notes,
-        status: 'pending'
+        status: 'pending',
+        request_details: payload.request_details || {},
+        notes: payload.notes || null,
+        expires_at: payload.request_type === 'export' 
+          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days for exports
+          : null
       })
       .select()
       .single()
@@ -234,46 +150,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create GDPR request' }, { status: 500 })
     }
 
-    // If it's a deletion request, create deletion details
-    if (payload.request_type === 'delete' && payload.deletion_details) {
-      const gracePeriodEnds = payload.deletion_details.soft_delete
-        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-        : null
-
-      const { error: detailsError } = await supabase
-        .from('gdpr_deletion_details')
-        .insert({
-          request_id: gdprRequest.id,
-          soft_delete: payload.deletion_details.soft_delete,
-          deletion_reason: payload.deletion_details.deletion_reason,
-          included_data: payload.deletion_details.included_data || [],
-          excluded_data: payload.deletion_details.excluded_data || [],
-          grace_period_ends: gracePeriodEnds
-        })
-
-      if (detailsError) {
-        console.error('Error creating deletion details:', detailsError)
-        // Rollback the request
-        await supabase.from('gdpr_requests').delete().eq('id', gdprRequest.id)
-        return NextResponse.json({ error: 'Failed to create deletion details' }, { status: 500 })
-      }
-    }
-
-    // Log the action
-    await supabase
-      .from('gdpr_audit_log')
-      .insert({
-        admin_id: user.id,
-        action: 'create_gdpr_request',
-        resource_type: 'gdpr_request',
-        resource_id: gdprRequest.id,
-        changes: payload,
-        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        user_agent: request.headers.get('user-agent')
+    // Log the action using the log_gdpr_action function
+    const { error: auditError } = await supabase
+      .rpc('log_gdpr_action', {
+        p_admin_id: user.id,
+        p_action: 'create_data_request',
+        p_resource_type: 'gdpr_data_request',
+        p_resource_id: gdprRequest.id,
+        p_changes: payload,
+        p_ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null,
+        p_user_agent: request.headers.get('user-agent') || null
       })
 
+    if (auditError) {
+      console.error('Error logging audit trail:', auditError)
+      // Don't fail the request for audit errors, just log
+    }
+
     return NextResponse.json({
-      request: gdprRequest,
+      success: true,
+      request_id: gdprRequest.id,
+      status: gdprRequest.status,
+      estimated_completion: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours estimate
       message: `GDPR ${payload.request_type} request created successfully`
     })
   } catch (error: any) {

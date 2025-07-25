@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,66 @@ import {
   StyleSheet,
   Linking,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types/navigation';
 import { useTheme } from '../context/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PrivacyPolicy'>;
 
+const CURRENT_PRIVACY_POLICY_VERSION = '2.0';
+const PRIVACY_POLICY_EFFECTIVE_DATE = '2025-08-01';
+const PRIVACY_POLICY_LAST_UPDATED = '2025-07-24';
+
 export function PrivacyPolicyScreen({ navigation }: Props) {
   const { theme } = useTheme();
+  const [loading, setLoading] = useState(true);
+  const [hasReadCurrent, setHasReadCurrent] = useState(false);
+  const [lastReadVersion, setLastReadVersion] = useState<string | null>(null);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+
+  useEffect(() => {
+    loadPolicyReadStatus();
+  }, []);
+
+  const loadPolicyReadStatus = async () => {
+    try {
+      setLoading(true);
+      const lastRead = await AsyncStorage.getItem('privacy_policy_last_read_version');
+      const hasRead = lastRead === CURRENT_PRIVACY_POLICY_VERSION;
+      
+      setLastReadVersion(lastRead);
+      setHasReadCurrent(hasRead);
+    } catch (error) {
+      console.error('Error loading policy read status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAsRead = async () => {
+    try {
+      await AsyncStorage.setItem('privacy_policy_last_read_version', CURRENT_PRIVACY_POLICY_VERSION);
+      await AsyncStorage.setItem('privacy_policy_read_date', new Date().toISOString());
+      
+      setHasReadCurrent(true);
+      setLastReadVersion(CURRENT_PRIVACY_POLICY_VERSION);
+      
+      Alert.alert(
+        'Privacy Policy Acknowledged',
+        'Thank you for reading our Privacy Policy. Your acknowledgment has been recorded.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Error marking policy as read:', error);
+      Alert.alert('Error', 'Failed to record acknowledgment. Please try again.');
+    }
+  };
 
   const handleEmailPress = () => {
     Linking.openURL('mailto:privacy@noisemeld.com');
@@ -25,6 +75,19 @@ export function PrivacyPolicyScreen({ navigation }: Props) {
     Linking.openURL('https://noisemeld.com/privacy');
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+            Loading Privacy Policy...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView 
@@ -32,6 +95,73 @@ export function PrivacyPolicyScreen({ navigation }: Props) {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
+        {/* Version Status Card */}
+        <View style={[styles.versionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View style={styles.versionHeader}>
+            <Text style={[styles.versionTitle, { color: theme.text }]}>
+              Version {CURRENT_PRIVACY_POLICY_VERSION}
+            </Text>
+            {hasReadCurrent ? (
+              <View style={[styles.statusBadge, { backgroundColor: '#10B981' }]}>
+                <Ionicons name="checkmark-circle" size={16} color="white" />
+                <Text style={styles.statusText}>Read</Text>
+              </View>
+            ) : (
+              <View style={[styles.statusBadge, { backgroundColor: '#F59E0B' }]}>
+                <Ionicons name="time" size={16} color="white" />
+                <Text style={styles.statusText}>Unread</Text>
+              </View>
+            )}
+          </View>
+          
+          <Text style={[styles.versionDate, { color: theme.textSecondary }]}>
+            Effective: {PRIVACY_POLICY_EFFECTIVE_DATE} • Updated: {PRIVACY_POLICY_LAST_UPDATED}
+          </Text>
+          
+          {lastReadVersion && lastReadVersion !== CURRENT_PRIVACY_POLICY_VERSION && (
+            <Text style={[styles.updateNotice, { color: '#F59E0B' }]}>
+              ⚠️ Policy updated since your last reading (v{lastReadVersion})
+            </Text>
+          )}
+          
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => setShowVersionHistory(!showVersionHistory)}
+          >
+            <Ionicons name="time-outline" size={16} color={theme.text} />
+            <Text style={[styles.actionButtonText, { color: theme.text }]}>
+              {showVersionHistory ? 'Hide' : 'Show'} Version History
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Version History */}
+        {showVersionHistory && (
+          <View style={[styles.versionHistory, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Text style={[styles.historyTitle, { color: theme.text }]}>Version History</Text>
+            <View style={styles.historyItem}>
+              <View style={styles.historyHeader}>
+                <Text style={[styles.historyVersion, { color: theme.text }]}>Version 2.0</Text>
+                <Text style={[styles.historyDate, { color: theme.textSecondary }]}>2025-08-01</Text>
+              </View>
+              <Text style={[styles.historyChange, { color: theme.textSecondary }]}>
+                • Added comprehensive GDPR compliance sections{'\n'}
+                • Enhanced data subject rights documentation{'\n'}
+                • Added EU-specific data processing information
+              </Text>
+            </View>
+            <View style={styles.historyItem}>
+              <View style={styles.historyHeader}>
+                <Text style={[styles.historyVersion, { color: theme.text }]}>Version 1.0</Text>
+                <Text style={[styles.historyDate, { color: theme.textSecondary }]}>2025-01-01</Text>
+              </View>
+              <Text style={[styles.historyChange, { color: theme.textSecondary }]}>
+                • Initial privacy policy version
+              </Text>
+            </View>
+          </View>
+        )}
+
         <Text style={[styles.lastUpdated, { color: theme.textSecondary }]}>
           Last Updated: July 24, 2025
         </Text>
@@ -188,6 +318,19 @@ export function PrivacyPolicyScreen({ navigation }: Props) {
           </Text>
         </Text>
 
+        {/* Acknowledgment Button */}
+        {!hasReadCurrent && (
+          <TouchableOpacity
+            style={[styles.acknowledgmentButton, { backgroundColor: theme.primary }]}
+            onPress={markAsRead}
+          >
+            <Ionicons name="checkmark-circle" size={20} color="white" />
+            <Text style={styles.acknowledgmentButtonText}>
+              I have read and understood this Privacy Policy
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
@@ -246,5 +389,115 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+  },
+  versionCard: {
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  versionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  versionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  versionDate: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  updateNotice: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 12,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  versionHistory: {
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  historyItem: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  historyVersion: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  historyDate: {
+    fontSize: 14,
+  },
+  historyChange: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  acknowledgmentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  acknowledgmentButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });
