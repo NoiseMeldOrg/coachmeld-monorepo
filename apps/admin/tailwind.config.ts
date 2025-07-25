@@ -7,7 +7,10 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-    './**/*.{ts,tsx}', // Catch-all pattern for monorepo
+  ],
+  safelist: [
+    'dark',
+    'light',
   ],
   prefix: "",
   theme: {
