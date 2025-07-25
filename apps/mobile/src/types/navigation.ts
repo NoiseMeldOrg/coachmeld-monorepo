@@ -9,6 +9,12 @@ export type RootStackParamList = {
   EditProfile: undefined;
   EditProfileField: { field: string; currentProfile: any };
   PrivacyPolicy: undefined;
+  GDPRConsent: { isNewUser: boolean };
+  PrivacySettings: undefined;
+  DataExport: undefined;
+  DeleteAccount: undefined;
+  DataCorrection: undefined;
+  ConsentManagement: undefined;
 };
 
 export type MainTabParamList = {
