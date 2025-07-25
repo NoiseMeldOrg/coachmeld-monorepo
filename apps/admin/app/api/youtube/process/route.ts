@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    logger.debug('Request body:', JSON.stringify(body, null, 2))
+    logger.debug('Request body:', { body: JSON.stringify(body, null, 2) })
     const { playlistId, videoId, url, videos: frontendVideos, coachAccess } = body
     
     // Validate coach access configuration
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       const match = url.match(/[?&]list=([^&]+)/)
       if (match) {
         actualPlaylistId = match[1]
-        logger.info('Extracted playlist ID from URL:', actualPlaylistId)
+        logger.info('Extracted playlist ID from URL:', { actualPlaylistId })
       }
     }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
       if (match) {
         actualVideoId = match[1]
-        logger.info('Extracted video ID from URL:', actualVideoId)
+        logger.info('Extracted video ID from URL:', { actualVideoId })
       }
     }
 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     
     if (actualVideoId) {
       // Process single video
-      logger.info('Processing single video:', actualVideoId)
+      logger.info('Processing single video:', { actualVideoId })
       // First check for duplicates
       const videoUrl = `https://youtube.com/watch?v=${actualVideoId}`
       const normalizedUrl = normalizeYouTubeUrl(videoUrl)
@@ -94,9 +94,9 @@ export async function POST(request: NextRequest) {
       }
       
       try {
-        logger.info('Fetching transcript for video:', actualVideoId)
+        logger.info('Fetching transcript for video:', { actualVideoId })
         const transcript = await getVideoTranscript(actualVideoId)
-        logger.info('Transcript length:', transcript.length)
+        logger.info('Transcript length:', { length: transcript.length })
         videosToProcess = [{
           videoId: actualVideoId,
           title: `YouTube Video ${actualVideoId}`,
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Process playlist - first get metadata only
-      logger.info('Processing playlist with ID:', actualPlaylistId)
+      logger.info('Processing playlist with ID:', { actualPlaylistId })
       const playlistVideos = await processPlaylist(actualPlaylistId)
       console.log(`Found ${playlistVideos.length} videos in playlist`)
       
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
 
     const results = []
     
-    logger.info(`Processing ${videosToProcess.length} videos`)
+    logger.info('Processing videos', { count: videosToProcess.length })
 
     // Send progress updates via Server-Sent Events or WebSocket if needed
     // For now, we'll process all videos and return results
@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
           throw new Error(sourceError.message)
         }
         
-        logger.info('Document source created:', documentSource.id, documentSource.title)
+        logger.info('Document source created:', { id: documentSource.id, title: documentSource.title })
 
         // Chunk the transcript
         const chunks = chunkText(video.transcript)
@@ -280,7 +280,7 @@ export async function POST(request: NextRequest) {
         // Generate embeddings and store chunks
         const chunkPromises = chunks.map(async (chunk, i) => {
           try {
-            logger.debug(`Generating embedding for chunk ${i + 1}/${chunks.length}`)
+            logger.debug('Generating embedding for chunk', { current: i + 1, total: chunks.length })
             const embedding = await generateEmbedding(chunk)
             
             return {
@@ -341,7 +341,7 @@ export async function POST(request: NextRequest) {
             }
           }
           
-          logger.info(`Created coach access for ${chunkIds.length} chunks with ${coachAccess.length} coaches`)
+          logger.info('Created coach access', { chunks: chunkIds.length, coaches: coachAccess.length })
         }
 
         results.push({
