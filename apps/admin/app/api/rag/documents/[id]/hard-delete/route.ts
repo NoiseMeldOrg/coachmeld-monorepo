@@ -17,7 +17,7 @@ export async function DELETE(
     }
 
     const sourceId = params.id
-    logger.warn('Hard delete requested for source:', sourceId)
+    logger.warn('Hard delete requested for source:', { sourceId })
 
     // Create service client for admin operations
     const serviceClient = await createServiceClient()
