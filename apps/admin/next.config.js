@@ -12,7 +12,9 @@ const nextConfig = {
   eslint: {
     // Skip ESLint during production builds since it's a devDependency
     ignoreDuringBuilds: true
-  }
+  },
+  // Force production optimization
+  swcMinify: true,
 }
 
 module.exports = nextConfig
