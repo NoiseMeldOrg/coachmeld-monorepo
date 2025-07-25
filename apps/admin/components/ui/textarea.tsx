@@ -19,6 +19,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     )
   }
 )
-Textarea.displayName = "Textarea"
+// Safely set displayName
+if (Textarea) {
+  Textarea.displayName = "Textarea"
+}
 
 export { Textarea }

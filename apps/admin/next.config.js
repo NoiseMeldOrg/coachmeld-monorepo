@@ -24,10 +24,10 @@ const nextConfig = {
       keep_classnames: true,
     },
   },
-  // Ensure static files are served correctly
+  // Generate unique build ID to prevent chunk loading issues
   generateBuildId: async () => {
-    // Use a consistent build ID to help with caching
-    return 'coachmeld-admin-build'
+    // Use timestamp-based build ID to ensure fresh chunks
+    return `coachmeld-admin-${Date.now()}`
   },
 }
 

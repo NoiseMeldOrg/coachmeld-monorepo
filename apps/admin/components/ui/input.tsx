@@ -20,6 +20,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     )
   }
 )
-Input.displayName = "Input"
+// Safely set displayName
+if (Input) {
+  Input.displayName = "Input"
+}
 
 export { Input }

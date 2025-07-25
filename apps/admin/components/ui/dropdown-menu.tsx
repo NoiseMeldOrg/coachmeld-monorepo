@@ -179,7 +179,10 @@ const DropdownMenuShortcut = ({
     />
   )
 }
-DropdownMenuShortcut.displayName = "DropdownMenuShortcut"
+// Safely set displayName
+if (DropdownMenuShortcut) {
+  DropdownMenuShortcut.displayName = "DropdownMenuShortcut"
+}
 
 export {
   DropdownMenu,
