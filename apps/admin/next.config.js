@@ -13,6 +13,8 @@ const nextConfig = {
     // Skip ESLint during production builds since it's a devDependency
     ignoreDuringBuilds: true
   },
+  // Force production optimization
+  swcMinify: true,
   // Ensure static files are served correctly
   generateBuildId: async () => {
     // Use a consistent build ID to help with caching

@@ -6,7 +6,7 @@ services:
     plan: starter # Change to 'standard' for production
     rootDir: apps/admin
     buildCommand: cd ../.. && npm install && npm run build:packages && cd apps/admin && npm run build
-    startCommand: npm run start
+    startCommand: NODE_ENV=production npm run start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
