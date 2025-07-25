@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 10",
     "lint:next": "next lint",
     "typecheck": "tsc --noEmit",

@@ -15,6 +15,11 @@ const nextConfig = {
   },
   // Force production optimization
   swcMinify: true,
+  // Ensure static files are served correctly
+  generateBuildId: async () => {
+    // Use a consistent build ID to help with caching
+    return 'coachmeld-admin-build'
+  },
 }
 
 module.exports = nextConfig
