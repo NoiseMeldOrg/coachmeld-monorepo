@@ -17,6 +17,7 @@
     "build:admin": "cd apps/admin && bun run build",
     "build:web": "cd apps/mobile && bun expo export -p web",
     "build:mobile": "cd apps/mobile && bun expo build",
+    "build:packages": "cd packages/shared-types && npm run build && cd ../shared-config && npm run build && cd ../shared-utils && npm run build",
     "install:all": "bun install",
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules",
     "type-check": "bun run type-check:mobile && bun run type-check:admin",
