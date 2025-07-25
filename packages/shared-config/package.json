@@ -16,6 +16,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@coachmeld/shared-types": "workspace:*"
+    "@coachmeld/shared-types": "file:../shared-types"
   }
 }
