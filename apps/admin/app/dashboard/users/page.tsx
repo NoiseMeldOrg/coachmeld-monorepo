@@ -18,7 +18,8 @@ import {
   XCircle,
   Clock,
   Activity,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react'
 
 interface User {
@@ -144,6 +145,38 @@ export default function UsersPage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const deleteUser = async (user: User) => {
+    if (!confirm(`Are you sure you want to delete user: ${user.email}?`)) return
+
+    try {
+      const response = await fetch('/api/users/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, userId: user.id })
+      })
+
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete user')
+      }
+
+      toast({
+        title: 'Success',
+        description: `User ${user.email} deleted successfully`
+      })
+
+      // Refresh users list
+      fetchUsers()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete user',
+        variant: 'destructive'
+      })
     }
   }
 
@@ -293,6 +326,14 @@ export default function UsersPage() {
                         {user.role}
                       </Badge>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => deleteUser(user)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
