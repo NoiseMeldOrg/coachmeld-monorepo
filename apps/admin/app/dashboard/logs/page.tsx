@@ -149,6 +149,7 @@ export default function LogsPage() {
       }, 5000)
       return () => clearInterval(interval)
     }
+    return undefined
   }, [timeRange, autoRefresh, fetchLogs, fetchMetrics])
 
   useEffect(() => {
