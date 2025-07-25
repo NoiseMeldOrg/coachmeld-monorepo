@@ -25,9 +25,11 @@ export const useEUDetection = () => {
       try {
         // First check if we have a cached value
         const cachedValue = await AsyncStorage.getItem('gdpr_is_eu_user');
+        
         if (cachedValue !== null && mounted) {
+          const isEUFromCache = cachedValue === 'true';
           setState({
-            isEUUser: cachedValue === 'true',
+            isEUUser: isEUFromCache,
             isLoading: false,
             error: null,
           });

@@ -9,10 +9,12 @@ import {
   Modal,
   Alert,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { gdprService } from '../services/gdprService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface GDPRConsentFlowProps {
   isEUUser: boolean;
@@ -48,12 +50,16 @@ export const GDPRConsentFlow: React.FC<GDPRConsentFlowProps> = ({
     setError(null);
 
     try {
-      await gdprService.saveConsent({
+      // For signup flow, just save to AsyncStorage temporarily
+      // The consent will be saved to the database after successful signup
+      const consentData = {
         dataProcessing: dataProcessing || !isEUUser, // Always true for non-EU
         analytics,
         marketing,
         version: '2.0',
-      });
+      };
+      
+      await AsyncStorage.setItem('gdpr_consent_temp', JSON.stringify(consentData));
 
       onComplete();
     } catch (err) {
@@ -240,7 +246,7 @@ export const GDPRConsentFlow: React.FC<GDPRConsentFlowProps> = ({
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -262,9 +268,8 @@ export const GDPRConsentFlow: React.FC<GDPRConsentFlowProps> = ({
             {error}
           </Text>
         )}
-      </ScrollView>
-
-      <View style={styles.buttonContainer}>
+        {/* Move button inside ScrollView */}
+        <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[
             styles.continueButton,
@@ -294,6 +299,7 @@ export const GDPRConsentFlow: React.FC<GDPRConsentFlowProps> = ({
           </TouchableOpacity>
         )}
       </View>
+      </ScrollView>
 
       <Modal
         visible={showPrivacyPolicy}
@@ -322,7 +328,7 @@ export const GDPRConsentFlow: React.FC<GDPRConsentFlowProps> = ({
           </ScrollView>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -332,7 +338,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 40,
+    paddingTop: 10,
   },
   title: {
     fontSize: 28,
@@ -437,13 +444,14 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    paddingBottom: 30,
-    backgroundColor: 'transparent',
+    marginTop: 30,
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 0,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 12,
   },
   continueButton: {
     height: 50,

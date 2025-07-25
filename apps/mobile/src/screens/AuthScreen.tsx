@@ -19,6 +19,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types/navigation';
 import { useEUDetection } from '../hooks/useEUDetection';
 import { GDPRConsentFlow } from '../components/GDPRConsentFlow';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type AuthMode = 'signIn' | 'signUp' | 'forgotPassword';
 
@@ -29,6 +30,7 @@ export default function AuthScreen() {
   const { signIn, signUp, resetPassword } = useAuth();
   const navigation = useNavigation<AuthScreenNavigationProp>();
   const { isEUUser, isLoading: isDetectingEU } = useEUDetection();
+  
   const [mode, setMode] = useState<AuthMode>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +39,8 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [showGDPRConsent, setShowGDPRConsent] = useState(false);
   const [gdprConsentCompleted, setGdprConsentCompleted] = useState(false);
+
+
 
   const handlePrivacyPolicyPress = () => {
     // Navigate to Privacy Policy screen if in app context, otherwise open web link
@@ -150,7 +154,9 @@ export default function AuthScreen() {
     setShowGDPRConsent(false);
     setGdprConsentCompleted(true);
     // Automatically proceed with signup after GDPR consent
-    handleSubmit();
+    setTimeout(() => {
+      handleSubmit();
+    }, 100); // Small delay to ensure state updates
   };
 
   // Show GDPR consent flow for EU users during signup
