@@ -34,11 +34,11 @@ import { EditProfileFieldScreen } from './src/screens/EditProfileFieldScreen';
 import { CoachChatScreen } from './src/screens/CoachChatScreen';
 import { SavedRecipesScreen } from './src/screens/SavedRecipesScreen';
 import { PrivacyPolicyScreen } from './src/screens/PrivacyPolicyScreen';
-import GDPRConsentFlow from './src/components/GDPRConsentFlow';
-import PrivacySettingsScreen from './src/screens/PrivacySettingsScreen';
-import DataExportScreen from './src/screens/DataExportScreen';
-import DeleteAccountScreen from './src/screens/DeleteAccountScreen';
-import DataCorrectionScreen from './src/screens/DataCorrectionScreen';
+import { GDPRConsentScreen } from './src/screens/GDPRConsentScreen';
+import { PrivacySettingsScreen } from './src/screens/PrivacySettingsScreen';
+import { DataExportScreen } from './src/screens/DataExportScreen';
+import { DeleteAccountScreen } from './src/screens/DeleteAccountScreen';
+import { DataCorrectionScreen } from './src/screens/DataCorrectionScreen';
 import ConsentManagementScreen from './src/screens/ConsentManagementScreen';
 
 const Stack = createStackNavigator();
@@ -228,7 +228,7 @@ function AppContent() {
             />
             <Stack.Screen 
               name="GDPRConsent" 
-              component={GDPRConsentFlow} 
+              component={GDPRConsentScreen} 
               options={{
                 headerShown: false,
                 gestureEnabled: false,
@@ -287,7 +287,7 @@ function AppContent() {
             />
             <Stack.Screen 
               name="GDPRConsent" 
-              component={GDPRConsentFlow} 
+              component={GDPRConsentScreen} 
               options={{
                 headerShown: false,
                 gestureEnabled: false,
