@@ -12,7 +12,12 @@ const nextConfig = {
   eslint: {
     // Skip ESLint during production builds since it's a devDependency
     ignoreDuringBuilds: true
-  }
+  },
+  // Ensure static files are served correctly
+  generateBuildId: async () => {
+    // Use a consistent build ID to help with caching
+    return 'coachmeld-admin-build'
+  },
 }
 
 module.exports = nextConfig
