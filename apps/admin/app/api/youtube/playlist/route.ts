@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      logger.info('Fetching playlist info for:', playlistId)
+      logger.info('Fetching playlist info for:', { playlistId })
       
       const youtube = await Innertube.create()
       const playlist = await youtube.getPlaylist(playlistId)

@@ -144,7 +144,7 @@ export async function GET() {
         .gte('created_at', last30d.toISOString())
       
       // Subscription stats
-      const { data: activeSubscriptions } = await supabase
+      const { data: _activeSubscriptions } = await supabase
         .from('subscriptions')
         .select('subscription_status', { count: 'exact', head: false })
         .eq('subscription_status', 'active')

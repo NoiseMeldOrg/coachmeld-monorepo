@@ -298,16 +298,16 @@ async function getRetentionStatus(supabase: any) {
 
   if (allUsers) {
     statistics.total_users = allUsers.length
-    statistics.users_with_retention_dates = allUsers.filter(u => u.data_retention_date).length
+    statistics.users_with_retention_dates = allUsers.filter((u: any) => u.data_retention_date).length
 
     const now = new Date()
     const thirtyDaysFromNow = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000))
 
-    statistics.expired_users = allUsers.filter(u => 
+    statistics.expired_users = allUsers.filter((u: any) => 
       u.data_retention_date && new Date(u.data_retention_date) < now
     ).length
 
-    statistics.next_expiring_users = allUsers.filter(u => 
+    statistics.next_expiring_users = allUsers.filter((u: any) => 
       u.data_retention_date && 
       new Date(u.data_retention_date) >= now && 
       new Date(u.data_retention_date) <= thirtyDaysFromNow
