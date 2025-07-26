@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/badge'
+import { getDisplayVersion } from '@/lib/version'
 import {
   FileText,
   Users,
@@ -84,7 +85,7 @@ export function Sidebar() {
       </nav>
       <div className="border-t p-4">
         <p className="text-xs text-muted-foreground">
-          Version 0.1.0
+          Version {getDisplayVersion()}
         </p>
       </div>
     </div>

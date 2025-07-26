@@ -1,0 +1,26 @@
+{
+  "name": "@coachmeld/scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build and release scripts for CoachMeld monorepo",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "conventional-changelog-cli": "^5.0.0",
+    "semver": "^7.6.2"
+  },
+  "devDependencies": {
+    "jest": "^30.0.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.test.js"],
+    "collectCoverageFrom": [
+      "*.js",
+      "!*.test.js"
+    ]
+  }
+}

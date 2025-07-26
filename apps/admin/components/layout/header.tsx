@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 import { LogOut, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { getAdminVersionText } from '@/lib/version'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +36,7 @@ export function Header() {
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-6">
-      <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+      <h1 className="text-xl font-semibold">{getAdminVersionText()}</h1>
       <div className="flex items-center gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
