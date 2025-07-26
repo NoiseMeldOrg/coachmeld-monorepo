@@ -1,0 +1,60 @@
+const { version } = require('./package.json');
+
+/**
+ * Expo App Configuration with Dynamic Version
+ * This file replaces app.json to enable dynamic version injection
+ */
+export default {
+  expo: {
+    name: "CoachMeld",
+    slug: "CoachMeld",
+    version: version, // Dynamic version from package.json
+    orientation: "portrait",
+    icon: "./assets/icon.png",
+    userInterfaceStyle: "automatic",
+    splash: {
+      image: "./assets/splash-icon.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff"
+    },
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.coachmeld.app"
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#ffffff"
+      },
+      package: "com.coachmeld.app",
+      softwareKeyboardLayoutMode: "pan"
+    },
+    web: {
+      favicon: "./assets/favicon.png",
+      name: "CoachMeld - AI Health Coach",
+      shortName: "CoachMeld",
+      lang: "en",
+      scope: "/",
+      themeColor: "#ffffff",
+      backgroundColor: "#ffffff",
+      display: "standalone",
+      orientation: "portrait",
+      bundler: "metro",
+      output: "single"
+    },
+    extra: {
+      eas: {
+        projectId: "f53c4d35-ca8f-4b9b-8e0b-f53bb0028a83"
+      }
+    },
+    plugins: [
+      [
+        "@stripe/stripe-react-native",
+        {
+          merchantIdentifier: "merchant.com.noisemeld.coachmeld",
+          enableGooglePay: true
+        }
+      ]
+    ]
+  }
+};

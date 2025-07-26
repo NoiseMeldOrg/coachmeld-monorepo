@@ -31,7 +31,18 @@
     "test:admin": "cd apps/admin && bun run test",
     "test:watch": "echo 'Run test:watch:mobile or test:watch:admin to watch specific app tests'",
     "test:watch:mobile": "cd apps/mobile && bun run test:watch",
-    "test:watch:admin": "cd apps/admin && bun run test:watch"
+    "test:watch:admin": "cd apps/admin && bun run test:watch",
+    "npm:install:all": "npm ci && cd apps/mobile && npm ci && cd ../admin && npm ci",
+    "npm:install:fresh": "npm install && cd apps/mobile && npm install && cd ../admin && npm install",
+    "npm:clean:install": "rm -rf node_modules package-lock.json apps/*/node_modules apps/*/package-lock.json && npm install",
+    "check-versions": "node scripts/check-versions.js",
+    "sync-versions": "node scripts/sync-versions.js",
+    "release": "node scripts/release.js",
+    "release:patch": "node scripts/release.js patch",
+    "release:minor": "node scripts/release.js minor",
+    "release:major": "node scripts/release.js major",
+    "release:dry-run": "node scripts/release.js --dry-run",
+    "test:version-scripts": "cd scripts && npm test"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
