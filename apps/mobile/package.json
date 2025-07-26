@@ -65,7 +65,7 @@
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^12.6.1",
     "@types/jest": "^30.0.0",
-    "@types/react": "~19.1.0",
+    "@types/react": "18.3.13",
     "eas-cli": "^16.11.0",
     "eslint-plugin-react-native": "^5.0.0",
     "jest": "^30.0.3",

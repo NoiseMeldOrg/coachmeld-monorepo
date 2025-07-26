@@ -1,4 +1,3 @@
-import 'react-native-url-polyfill/auto';
 import React, { useEffect, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
