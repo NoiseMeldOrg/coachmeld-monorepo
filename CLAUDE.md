@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this CoachMeld monorepo.
 
+## 🚨 MANDATORY PRE-WORK CHECKLIST 🚨
+**RUN THESE COMMANDS BEFORE MAKING ANY CHANGES:**
+
+```bash
+# 1. Check for open PRs (MUST be zero)
+gh pr list --state open
+
+# 2. Check current branch
+git branch
+
+# 3. If on main, create feature branch IMMEDIATELY
+git checkout -b fix/descriptive-name
+```
+
+**RULES:**
+- ❌ **If ANY PRs are open**: STOP - tell user about existing PR
+- ❌ **If on main branch**: STOP - create feature branch first  
+- ✅ **Only proceed if**: No open PRs AND on feature branch
+
 ## IMPORTANT: Always Review This Document
 - After conversation summaries/compactions
 - After the user clears the session
@@ -9,33 +28,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - When creating PRs or commits
 - Before starting any new task
 
-## 🚨 CRITICAL: Check for Open PRs FIRST 🚨
-**BEFORE starting ANY new feature or creating ANY branch:**
-```bash
-gh pr list --state open
-```
-If this shows ANY open PRs, you MUST NOT create new branches or PRs. Tell the user about the open PR instead.
-
-## CRITICAL: One PR at a Time Rule
-**ABSOLUTE RULE**: Only ONE pull request can be open at any time. 
-- Always run `gh pr list --state open` BEFORE creating branches
-- If a PR already exists, do NOT create another one
-- Complete the current PR before starting any new work
-- If asked to work on something new while a PR is open, remind the user about the existing PR
-
-## 🚨 CRITICAL: NEVER Commit to Master Branch
-**MANDATORY WORKFLOW**:
-1. **FIRST**: Run `git branch` to check current branch
-2. **IF on master**: IMMEDIATELY run `git checkout -b feat/task-name`
-3. **NEVER EVER** make commits while on master branch
-4. **ALL work** must be done on feature branches with PRs
-
 ## Development Principles
 - Make every change as simple as possible
 - Avoid massive or complex changes
 - Each change should impact minimal code
 - Use TodoWrite/TodoRead tools to track complex tasks
 - Provide high-level explanations of changes made
+
+## One PR at a Time Rule
+**ABSOLUTE RULE**: Only ONE pull request can be open at any time. 
+- Complete and merge the current PR before starting new work
+- If asked to work on something new while a PR is open, remind the user about the existing PR
+- This prevents conflicts and keeps the workflow simple
 
 ## Developer Information
 - **Timezone**: EST (Eastern Standard Time)
@@ -99,12 +103,13 @@ This ensures we're using the most current documentation and best practices.
 ## Git Workflow & PR Process
 
 ### Branch Strategy
-- Create feature branches from `master` using descriptive names: `feat/feature-name`, `fix/bug-name`, etc.
-- Always work on feature branches, never commit directly to master
+- **ALWAYS follow the MANDATORY PRE-WORK CHECKLIST above**
+- Create feature branches using descriptive names: `feat/feature-name`, `fix/bug-name`, etc.
 - Use prefixes: `feat/mobile/`, `feat/admin/`, `feat/shared/` for clarity
+- NEVER commit directly to main branch
 
 ### Creating Pull Requests
-1. Create a new branch: `git checkout -b feat/app-name/feature-name`
+1. **FOLLOW PRE-WORK CHECKLIST** (check PRs, check branch, create branch if needed)
 2. Make changes and commit with descriptive messages
 3. Push branch: `git push -u origin feat/app-name/feature-name`
 4. Create PR using GitHub CLI: `gh pr create`
@@ -170,29 +175,15 @@ Describe visual changes or note where to see them
 🤖 Generated with [Claude Code](https://claude.ai/code)
 ```
 
-### Solo Developer Workflow
-Since this is a solo developer project, follow these specific practices:
-
-#### One PR at a Time
-- **Only have ONE pull request open at any time**
-- Complete and merge the current PR before starting new work
-- This prevents conflicts and keeps the workflow simple
-
-#### PR Testing Protocol
+### PR Testing Protocol
 1. When creating a new PR, IMMEDIATELY notify the user: "PR #X is ready for testing"
 2. Wait for user feedback before proceeding to other tasks
 3. If changes are needed, update the same PR (don't create a new one)
 
-#### Branch Management
-- NEVER commit directly to master
-- ALWAYS create a feature branch first
-- When making fixes to an existing PR, push to the same branch
-- Delete local branches after PRs are merged
-
 ### Post-PR Workflow
 **IMPORTANT**: When the user tells you they have merged/closed a PR:
-1. IMMEDIATELY switch to master: `git checkout master`
-2. ALWAYS pull the latest changes: `git pull origin master`
+1. IMMEDIATELY switch to main: `git checkout main`
+2. ALWAYS pull the latest changes: `git pull origin main`
 3. NEVER skip this step - working on outdated code causes issues
 4. Only then continue with the next task
 
