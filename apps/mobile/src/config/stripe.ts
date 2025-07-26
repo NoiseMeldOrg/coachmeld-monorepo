@@ -3,9 +3,12 @@
 // For development, use your test mode publishable key
 // For production, use your live mode publishable key
 
-import { createLogger } from '@coachmeld/shared-utils';
+// Temporarily disable logger import
+// import { createLogger } from '@coachmeld/shared-utils';
 
-const logger = createLogger('StripeConfig');
+const logger = {
+  error: (msg: string, error?: any) => console.error(msg, error)
+};
 
 export const STRIPE_CONFIG = {
   // Replace with your Stripe publishable key

@@ -2,9 +2,12 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { lightTheme, darkTheme, Theme } from '../theme/colors';
-import { createLogger } from '@coachmeld/shared-utils';
+// Temporarily disable logger import
+// import { createLogger } from '@coachmeld/shared-utils';
 
-const logger = createLogger('ThemeContext');
+const logger = {
+  error: (msg: string, error?: any) => console.error(msg, error)
+};
 
 interface ThemeContextType {
   theme: Theme;

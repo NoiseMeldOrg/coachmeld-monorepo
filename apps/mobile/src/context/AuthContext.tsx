@@ -4,9 +4,13 @@ import { Platform } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { checkAndEnrollTestUser } from '../utils/testUserUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createLogger } from '@coachmeld/shared-utils';
+// Temporarily disable logger import
+// import { createLogger } from '@coachmeld/shared-utils';
 
-const logger = createLogger('AuthContext');
+const logger = {
+  info: (msg: string, context?: any) => console.info(msg, context),
+  error: (msg: string, error?: any) => console.error(msg, error)
+};
 
 interface AuthContextType {
   user: User | null;
