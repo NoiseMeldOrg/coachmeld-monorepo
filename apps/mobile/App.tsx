@@ -1,9 +1,8 @@
-import 'react-native-url-polyfill/auto';
 import React, { useEffect, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { Platform } from 'react-native';
-import { logger } from '../../packages/shared-utils/src/logger';
+// import { logger } from '../../packages/shared-utils/src/logger';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -304,11 +303,11 @@ function AppContent() {
 export default function App() {
   // Add error boundary and debug logging for web deployment
   useEffect(() => {
-    logger.info('App starting', {
-      platform: Platform.OS,
-      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ? 'configured' : 'missing',
-      envVars: Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC'))
-    });
+    // logger.info('App starting', {
+    //   platform: Platform.OS,
+    //   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ? 'configured' : 'missing',
+    //   envVars: Object.keys(process.env).filter(key => key.startsWith('EXPO_PUBLIC'))
+    // });
   }, []);
 
   try {

@@ -1,17 +1,13 @@
-// Import React and make it globally available for web builds
 import React from 'react';
-
-// Ensure React is globally available for web platform
-if (typeof window !== 'undefined') {
-  (window as any).React = React;
-}
-
 import { registerRootComponent } from 'expo';
-
-// Import web polyfills for React Native modules
 import 'react-native-url-polyfill/auto';
-
 import App from './App';
+
+// Workaround for Expo dev tools React hooks error
+if (__DEV__) {
+  // Ensure React is available globally for Expo dev tools
+  global.React = React;
+}
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);
 // It also ensures that whether you load the app in Expo Go or in a native build,

@@ -2,9 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { Coach, Subscription, UserCoachPreferences } from '../types';
 import { supabase } from '../lib/supabase';
-import { createLogger } from '@coachmeld/shared-utils';
+// Temporarily disable logger import
+// import { createLogger } from '@coachmeld/shared-utils';
 
-const logger = createLogger('CoachContext');
+const logger = {
+  debug: (msg: string, context?: any) => console.debug(msg, context),
+  info: (msg: string, context?: any) => console.info(msg, context), 
+  error: (msg: string, error?: any) => console.error(msg, error)
+};
 
 interface CoachContextType {
   coaches: Coach[];

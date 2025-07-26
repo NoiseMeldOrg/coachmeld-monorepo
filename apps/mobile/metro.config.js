@@ -25,8 +25,12 @@ config.resolver.sourceExts = [...config.resolver.sourceExts, 'web.js', 'web.ts',
 // Add alias for React to ensure proper resolution
 config.resolver.alias = {
   ...config.resolver.alias,
-  'react': require.resolve('react'),
-  'react-native': require.resolve('react-native-web'),
+  'react': path.resolve(monorepoRoot, 'node_modules/react'),
+  'react-dom': path.resolve(monorepoRoot, 'node_modules/react-dom'),
+  // Only alias react-native to react-native-web for web platform
+  ...(process.env.EXPO_PLATFORM === 'web' ? {
+    'react-native': require.resolve('react-native-web'),
+  } : {}),
 };
 
 // 3. Force Metro to resolve workspace packages correctly and handle web platform

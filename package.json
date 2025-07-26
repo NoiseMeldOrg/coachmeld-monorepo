@@ -46,5 +46,20 @@
     "url": "https://github.com/NoiseMeldOrg/coachmeld-monorepo.git"
   },
   "author": "NoiseMeld",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "source-map": "^0.7.6"
+  },
+  "overrides": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.1"
+  },
+  "resolutions": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.1"
+  }
 }
