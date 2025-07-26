@@ -4,13 +4,9 @@ import { Subscription } from '../types';
 import { supabase } from '../lib/supabase';
 import { stripeService } from '../services/stripeService';
 import { STRIPE_CONFIG } from '../config/stripe';
-// Temporarily disable logger import  
-// import { createLogger } from '@coachmeld/shared-utils';
+import { createLogger } from '@coachmeld/shared-utils';
 
-const logger = {
-  info: (msg: string, context?: any) => console.info(msg, context),
-  error: (msg: string, error?: any) => console.error(msg, error)
-};
+const logger = createLogger('SubscriptionContext');
 
 interface SubscriptionContextType {
   subscriptions: Subscription[];

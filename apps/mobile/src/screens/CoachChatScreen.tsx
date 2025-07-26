@@ -39,7 +39,9 @@ import { CoachSelectorPanel } from '../components/CoachSelectorPanel';
 import { LegendList, LegendListRef } from '@legendapp/list';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { logger } from '../../../../packages/shared-utils/src/logger';
+import { createLogger } from '@coachmeld/shared-utils';
+
+const logger = createLogger('CoachChatScreen');
 
 export const CoachChatScreen: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
@@ -370,10 +372,62 @@ export const CoachChatScreen: React.FC = () => {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-          <View style={styles.centerContent}>
-            <Text style={[styles.noCoachText, { color: theme.textSecondary }]}>
-              Please select a coach from the home screen
+          {/* Header with close button */}
+          <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
+            <TouchableOpacity 
+              onPress={() => navigation.goBack()}
+              style={styles.headerButton}
+            >
+              <Ionicons name="close" size={24} color={theme.text} />
+            </TouchableOpacity>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>
+              Select a Coach
             </Text>
+            <View style={styles.headerButton} />
+          </View>
+          
+          <View style={styles.centerContent}>
+            <MaterialCommunityIcons 
+              name="food-steak" 
+              size={64} 
+              color={theme.textSecondary} 
+              style={{ transform: [{ rotate: '-90deg' }] }}
+            />
+            <Text style={[styles.noCoachTitle, { color: theme.text }]}>
+              Welcome to CoachMeld!
+            </Text>
+            <Text style={[styles.noCoachText, { color: theme.textSecondary }]}>
+              Choose a coach to start your personalized health journey
+            </Text>
+            
+            {/* Free coach option */}
+            <TouchableOpacity 
+              style={[styles.freeCoachButton, { backgroundColor: theme.primary }]}
+              onPress={() => {
+                const freeCoach = coaches.find(c => c.freeTierEnabled);
+                if (freeCoach) {
+                  switchCoach(freeCoach.id);
+                }
+              }}
+            >
+              <MaterialCommunityIcons name="food-steak" size={20} color="white" style={{ transform: [{ rotate: '-90deg' }] }} />
+              <Text style={styles.freeCoachButtonText}>
+                Try Free Carnivore Coach
+              </Text>
+              <Text style={styles.freeCoachLimitText}>
+                5 messages/day
+              </Text>
+            </TouchableOpacity>
+            
+            {/* All coaches option */}
+            <TouchableOpacity 
+              style={[styles.allCoachesButton, { borderColor: theme.border }]}
+              onPress={() => navigation.navigate('Marketplace')}
+            >
+              <Text style={[styles.allCoachesButtonText, { color: theme.text }]}>
+                View All Coaches
+              </Text>
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
       </View>
@@ -890,5 +944,51 @@ const styles = StyleSheet.create({
   },
   loadingOlderText: {
     fontSize: 14,
+  },
+  noCoachTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  freeCoachButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FF6B6B',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 24,
+    marginHorizontal: 20,
+    gap: 8,
+  },
+  freeCoachButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+  },
+  freeCoachLimitText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  allCoachesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 12,
+    marginHorizontal: 20,
+  },
+  allCoachesButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
